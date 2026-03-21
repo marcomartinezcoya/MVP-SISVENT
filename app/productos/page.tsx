@@ -1,7 +1,23 @@
-import React from 'react';
-import { mockProducts, mockStats } from './mockData';
+"use client";
+
+import React, { useState } from 'react';
+import { mockProducts, mockStats, Product } from './mockData';
+import { ProductFormModal } from '@/components/modules/productos/ProductFormModal';
 
 export default function ProductosPage() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
+  const handleOpenNewProduct = () => {
+    setSelectedProduct(null);
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEditProduct = (product: Product) => {
+    setSelectedProduct(product);
+    setIsModalOpen(true);
+  };
+
   return (
     <div className="p-8 space-y-8">
       {/* Header Section */}
@@ -15,7 +31,10 @@ export default function ProductosPage() {
             <span className="material-symbols-outlined text-xl">download</span>
             Exportar
           </button>
-          <button className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-br from-primary-dim to-primary text-on-primary-container font-bold rounded-md shadow-lg shadow-primary/20 active:scale-95 transition-all">
+          <button 
+            onClick={handleOpenNewProduct}
+            className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-br from-primary-dim to-primary text-on-primary-container font-bold rounded-md shadow-lg shadow-primary/20 active:scale-95 transition-all"
+          >
             <span className="material-symbols-outlined text-xl">add</span>
             Nuevo Producto
           </button>
@@ -135,6 +154,7 @@ export default function ProductosPage() {
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-4">
                       <div className="h-12 w-12 rounded-lg bg-surface-container-highest overflow-hidden border border-outline-variant/20 shrink-0">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img alt={product.name} className="h-full w-full object-cover" src={product.imageUrl} />
                       </div>
                       <div>
@@ -189,7 +209,10 @@ export default function ProductosPage() {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <button className="p-2 text-on-surface-variant hover:text-primary hover:bg-primary/10 rounded-lg transition-all">
+                      <button 
+                        onClick={() => handleOpenEditProduct(product)}
+                        className="p-2 text-on-surface-variant hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
+                      >
                         <span className="material-symbols-outlined text-xl">edit</span>
                       </button>
                       <button className="p-2 text-on-surface-variant hover:text-error hover:bg-error/10 rounded-lg transition-all">
@@ -220,6 +243,15 @@ export default function ProductosPage() {
           </div>
         </div>
       </div>
+
+      <ProductFormModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        product={selectedProduct}
+        onSave={(data) => {
+          console.log("Guardando producto:", data);
+        }}
+      />
     </div>
   );
 }
