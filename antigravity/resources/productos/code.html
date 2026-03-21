@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Nexus Inventory - Gestión de Productos</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body { font-family: 'Manrope', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .glass-panel {
+            background: rgba(29, 38, 57, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #080e1b; }
+        ::-webkit-scrollbar-thumb { background: #1d2639; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #424857; }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "tertiary-fixed-dim": "#54eed8",
+                        "primary-dim": "#3a6bed",
+                        "on-error-container": "#ffa8a3",
+                        "on-tertiary-fixed": "#004a41",
+                        "tertiary-dim": "#48e5d0",
+                        "secondary": "#c180ff",
+                        "surface-bright": "#222c41",
+                        "inverse-primary": "#1854d6",
+                        "secondary-dim": "#9c48ea",
+                        "on-secondary-fixed-variant": "#7511c3",
+                        "on-tertiary-container": "#005e54",
+                        "on-error": "#490006",
+                        "inverse-on-surface": "#4f5565",
+                        "on-surface": "#e2e8fb",
+                        "error": "#ff716c",
+                        "error-container": "#9f0519",
+                        "on-tertiary-fixed-variant": "#00695e",
+                        "on-primary-fixed": "#000000",
+                        "outline-variant": "#424857",
+                        "on-tertiary": "#00685c",
+                        "primary-fixed-dim": "#678dff",
+                        "surface-container-low": "#0c1322",
+                        "primary-container": "#7d9cff",
+                        "surface-dim": "#080e1b",
+                        "error-dim": "#d7383b",
+                        "on-secondary-container": "#e9cdff",
+                        "on-primary": "#002775",
+                        "surface-container-highest": "#1d2639",
+                        "secondary-container": "#6f00be",
+                        "inverse-surface": "#faf9ff",
+                        "surface-container": "#12192a",
+                        "on-background": "#e2e8fb",
+                        "surface-container-high": "#171f31",
+                        "surface": "#080e1b",
+                        "on-secondary": "#33005b",
+                        "on-surface-variant": "#a5abbd",
+                        "outline": "#6f7586",
+                        "tertiary-container": "#65fde6",
+                        "surface-tint": "#91abff",
+                        "on-primary-container": "#001d5c",
+                        "tertiary-fixed": "#65fde6",
+                        "tertiary": "#c6fff3",
+                        "on-secondary-fixed": "#4f0089",
+                        "surface-variant": "#1d2639",
+                        "secondary-fixed-dim": "#dbb4ff",
+                        "on-primary-fixed-variant": "#002570",
+                        "secondary-fixed": "#e5c6ff",
+                        "primary": "#91abff",
+                        "background": "#080e1b",
+                        "surface-container-lowest": "#000000",
+                        "primary-fixed": "#7d9cff"
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope"],
+                        "body": ["Manrope"],
+                        "label": ["Manrope"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-surface text-on-surface selection:bg-primary-container selection:text-on-primary-container">
+<!-- SideNavBar -->
+<aside class="h-screen w-64 fixed left-0 top-0 bg-surface-container-low flex flex-col py-6 px-4 gap-2 z-50">
+<div class="px-4 mb-8">
+<h1 class="text-lg font-extrabold text-primary tracking-tight">Inventory Pro</h1>
+<p class="text-xs text-on-surface-variant uppercase tracking-widest">Enterprise Suite</p>
+</div>
+<nav class="flex-1 flex flex-col gap-1">
+<a class="flex items-center gap-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-variant rounded-lg px-4 py-3 transition-all duration-200 hover:translate-x-1" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-medium text-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 bg-surface-variant text-primary rounded-lg px-4 py-3 border-l-4 border-primary-dim transition-all duration-200" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-medium text-sm">Productos</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-variant rounded-lg px-4 py-3 transition-all duration-200 hover:translate-x-1" href="#">
+<span class="material-symbols-outlined">local_shipping</span>
+<span class="font-medium text-sm">Proveedores</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-variant rounded-lg px-4 py-3 transition-all duration-200 hover:translate-x-1" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="font-medium text-sm">Clientes</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-variant rounded-lg px-4 py-3 transition-all duration-200 hover:translate-x-1" href="#">
+<span class="material-symbols-outlined">shopping_cart</span>
+<span class="font-medium text-sm">Compras</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-variant rounded-lg px-4 py-3 transition-all duration-200 hover:translate-x-1" href="#">
+<span class="material-symbols-outlined">sell</span>
+<span class="font-medium text-sm">Ventas</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-variant rounded-lg px-4 py-3 transition-all duration-200 hover:translate-x-1" href="#">
+<span class="material-symbols-outlined">warehouse</span>
+<span class="font-medium text-sm">Inventario</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-variant rounded-lg px-4 py-3 transition-all duration-200 hover:translate-x-1" href="#">
+<span class="material-symbols-outlined">compare_arrows</span>
+<span class="font-medium text-sm">Movimientos</span>
+</a>
+</nav>
+<div class="mt-auto pt-6 border-t border-outline-variant/10">
+<button class="w-full flex items-center gap-3 text-on-surface-variant hover:text-error px-4 py-3 transition-all duration-200">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-medium text-sm">Cerrar Sesión</span>
+</button>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-64 min-h-screen">
+<!-- TopAppBar -->
+<header class="w-full h-16 sticky top-0 z-40 bg-surface-container-low flex items-center justify-between px-8 border-b border-outline-variant/10">
+<div class="flex items-center gap-6">
+<h2 class="text-xl font-bold text-slate-100 tracking-tight">Nexus Inventory</h2>
+<div class="relative hidden lg:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">search</span>
+<input class="bg-surface-container-highest border-none rounded-md pl-10 pr-4 py-1.5 text-sm w-80 focus:ring-2 focus:ring-primary/50 text-on-surface placeholder:text-on-surface-variant" placeholder="Buscar productos, órdenes..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-on-surface-variant hover:bg-surface-variant rounded-full transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-variant rounded-full transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-variant rounded-full transition-colors">
+<span class="material-symbols-outlined">help</span>
+</button>
+<div class="h-8 w-8 rounded-full overflow-hidden bg-primary-container flex items-center justify-center ml-2 border border-outline-variant">
+<img alt="Perfil de Usuario" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCAQCPj12iWpAJOKu9IKpjlZu98voOj6du6oB14gEKRp-9dHqkALIG-Otq46txA3tEIofoqvGt-yJaw35LJavsgX7bAaOwyT9wHO2-koff4DmuCogo1f-_9U6KgRi-bNU5MZx6XE1r1YLhvfcsAmQFwI84SqFZCqm2u5aQYWE2ghKga6VAiDjJtQfmy7y8fQlXIbDo3GKIr10e0dc5yb-plQRte2OUY37H6NQYvI1DCHv93Nf4P3skOXIQV2GkndNjtx1Jrz8683hEJ"/>
+</div>
+</div>
+</header>
+<!-- Page Content -->
+<div class="p-8 space-y-8">
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<h3 class="text-3xl font-extrabold tracking-tight text-on-surface mb-1">Gestión de Productos</h3>
+<p class="text-on-surface-variant font-medium">Visualización completa del inventario y control de stock</p>
+</div>
+<div class="flex gap-3">
+<button class="flex items-center gap-2 px-5 py-2.5 bg-surface-variant text-primary font-semibold rounded-md border border-primary/20 hover:bg-primary/10 transition-all">
+<span class="material-symbols-outlined text-xl">download</span>
+                        Exportar
+                    </button>
+<button class="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-br from-primary-dim to-primary text-on-primary-container font-bold rounded-md shadow-lg shadow-primary/20 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-xl">add</span>
+                        Nuevo Producto
+                    </button>
+</div>
+</div>
+<!-- Bento Stats Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<!-- Total SKUs -->
+<div class="p-6 rounded-xl bg-surface-container-low border border-outline-variant/10 flex flex-col gap-4 relative overflow-hidden group">
+<div class="flex items-center justify-between z-10">
+<span class="text-on-surface-variant font-semibold text-sm uppercase tracking-wider">Total SKUs</span>
+<div class="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">inventory</span>
+</div>
+</div>
+<div class="z-10">
+<p class="text-4xl font-extrabold text-on-surface tracking-tighter">1,284</p>
+<p class="text-xs text-tertiary-fixed-dim mt-1 font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">trending_up</span> +12% este mes
+                        </p>
+</div>
+<div class="absolute -right-4 -bottom-4 w-24 h-24 bg-primary/5 rounded-full blur-2xl"></div>
+</div>
+<!-- Valor de Inventario -->
+<div class="p-6 rounded-xl bg-surface-container-low border border-outline-variant/10 flex flex-col gap-4 relative overflow-hidden group">
+<div class="flex items-center justify-between z-10">
+<span class="text-on-surface-variant font-semibold text-sm uppercase tracking-wider">Valor Total</span>
+<div class="p-2 bg-secondary/10 rounded-lg group-hover:bg-secondary/20 transition-colors">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">payments</span>
+</div>
+</div>
+<div class="z-10">
+<p class="text-4xl font-extrabold text-on-surface tracking-tighter">$425.8k</p>
+<p class="text-xs text-on-surface-variant mt-1 font-medium">Basado en costo unitario</p>
+</div>
+<div class="absolute -right-4 -bottom-4 w-24 h-24 bg-secondary/5 rounded-full blur-2xl"></div>
+</div>
+<!-- Alertas Críticas -->
+<div class="p-6 rounded-xl bg-surface-container-low border border-outline-variant/10 flex flex-col gap-4 relative overflow-hidden group">
+<div class="flex items-center justify-between z-10">
+<span class="text-on-surface-variant font-semibold text-sm uppercase tracking-wider">Alertas Críticas</span>
+<div class="p-2 bg-error/10 rounded-lg group-hover:bg-error/20 transition-colors">
+<span class="material-symbols-outlined text-error" style="font-variation-settings: 'FILL' 1;">report</span>
+</div>
+</div>
+<div class="z-10">
+<p class="text-4xl font-extrabold text-on-surface tracking-tighter">8</p>
+<p class="text-xs text-error mt-1 font-medium">Acción inmediata requerida</p>
+</div>
+<div class="absolute -right-4 -bottom-4 w-24 h-24 bg-error/5 rounded-full blur-2xl"></div>
+</div>
+<!-- Stock Bajo -->
+<div class="p-6 rounded-xl bg-surface-container-low border border-outline-variant/10 flex flex-col gap-4 relative overflow-hidden group">
+<div class="flex items-center justify-between z-10">
+<span class="text-on-surface-variant font-semibold text-sm uppercase tracking-wider">Stock Bajo</span>
+<div class="p-2 bg-tertiary-fixed-dim/10 rounded-lg group-hover:bg-tertiary-fixed-dim/20 transition-colors">
+<span class="material-symbols-outlined text-tertiary-fixed-dim" style="font-variation-settings: 'FILL' 1;">warning</span>
+</div>
+</div>
+<div class="z-10">
+<p class="text-4xl font-extrabold text-on-surface tracking-tighter">42</p>
+<p class="text-xs text-on-surface-variant mt-1 font-medium">Por debajo del umbral mínimo</p>
+</div>
+<div class="absolute -right-4 -bottom-4 w-24 h-24 bg-tertiary-fixed-dim/5 rounded-full blur-2xl"></div>
+</div>
+</div>
+<!-- Table Controls -->
+<div class="flex flex-col md:flex-row gap-4 items-center justify-between">
+<div class="flex items-center gap-4 w-full md:w-auto">
+<div class="relative w-full md:w-72">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container border-outline-variant/20 rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-primary/40 focus:border-primary text-on-surface transition-all" placeholder="Filtrar por nombre o SKU..." type="text"/>
+</div>
+<select class="bg-surface-container border-outline-variant/20 rounded-lg px-4 py-2 text-sm text-on-surface focus:ring-2 focus:ring-primary/40 transition-all">
+<option>Categoría: Todas</option>
+<option>Electrónica</option>
+<option>Mobiliario</option>
+<option>Hardware</option>
+<option>Suministros</option>
+</select>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-xs text-on-surface-variant font-medium">Mostrar 1-10 de 1,284</span>
+<div class="flex gap-1">
+<button class="p-1.5 bg-surface-container-highest rounded-md text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined text-lg">chevron_left</span></button>
+<button class="p-1.5 bg-surface-container-highest rounded-md text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined text-lg">chevron_right</span></button>
+</div>
+</div>
+</div>
+<!-- Enhanced Data Table -->
+<div class="overflow-hidden rounded-xl border border-outline-variant/10 bg-surface-container-low shadow-2xl shadow-black/40">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-high/50 border-b border-outline-variant/10">
+<th class="px-6 py-4 text-xs font-bold text-on-surface-variant uppercase tracking-wider">Producto</th>
+<th class="px-6 py-4 text-xs font-bold text-on-surface-variant uppercase tracking-wider">Categoría</th>
+<th class="px-6 py-4 text-xs font-bold text-on-surface-variant uppercase tracking-wider">Nivel de Stock</th>
+<th class="px-6 py-4 text-xs font-bold text-on-surface-variant uppercase tracking-wider">Precio Unitario</th>
+<th class="px-6 py-4 text-xs font-bold text-on-surface-variant uppercase tracking-wider">Estado</th>
+<th class="px-6 py-4 text-xs font-bold text-on-surface-variant uppercase tracking-wider text-right">Acciones</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/5">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-variant/30 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-4">
+<div class="h-12 w-12 rounded-lg bg-surface-container-highest overflow-hidden border border-outline-variant/20">
+<img alt="Reloj Inteligente" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBm5X-F9YjpQznIKdY9-M3F16lWrbumTYPHX-ifyOeQAL_DJase0N9OIddjwjTNCV_pz2TBu2p2vGBMaQtPiDR-YAp-giD6jz0HBbT9Ogl21JxWSaetf5lrZslVUwBC5O9q55AVzJcK3Agm_ypW4fZ3i4PdXk5Gz4eZmvhuApWMurTHCfYMmovWPuBDjJBdR5MfIjK3CMRwgkGasG9p5lX4zfncDpgV3bPpQE4jQhoZpEumsdxuZkPRmrH3hkpZTu3BC2a324r878cx"/>
+</div>
+<div>
+<p class="font-bold text-on-surface group-hover:text-primary transition-colors">Smartwatch Series X</p>
+<p class="text-xs text-on-surface-variant">SKU: NEX-8429-EL</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-2.5 py-1 bg-surface-container-highest text-secondary text-[10px] font-extrabold uppercase rounded-full tracking-wide">Electrónica</span>
+</td>
+<td class="px-6 py-4">
+<div class="w-40 space-y-1.5">
+<div class="flex justify-between text-xs font-medium">
+<span class="text-on-surface">850 uds.</span>
+<span class="text-on-surface-variant">85%</span>
+</div>
+<div class="h-1.5 w-full bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary-dim rounded-full" style="width: 85%;"></div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<p class="font-bold text-on-surface">$249.00</p>
+</td>
+<td class="px-6 py-4">
+<span class="flex items-center gap-1.5 text-xs font-bold text-tertiary-fixed-dim">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary-fixed-dim"></span>
+                                    En Stock
+                                </span>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2">
+<button class="p-2 text-on-surface-variant hover:text-primary hover:bg-primary/10 rounded-lg transition-all"><span class="material-symbols-outlined text-xl">edit</span></button>
+<button class="p-2 text-on-surface-variant hover:text-error hover:bg-error/10 rounded-lg transition-all"><span class="material-symbols-outlined text-xl">delete</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-variant/30 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-4">
+<div class="h-12 w-12 rounded-lg bg-surface-container-highest overflow-hidden border border-outline-variant/20">
+<img alt="Monitor Curvo" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC1KIx3pzvMXwCEAJpITkM8ox3o6zOsLv6KbMPCtzhW3Vrj1L5Kb4aQNBKGu50oq6BIaYkum8IP9znFD5PED2dOs7dHitBQFq3yQKWTdOUABDWbTG1BnDQeHpRRPmBMEe0cuTrxIceonHbl_LKj9Sq7GOuAhFaz1v8BEVYcHIEHf9AhcU62b9jy3stDpcSu5GG3UjBHzUY61EATZLbeXYWGEyHRqMypeLbj4c1UEh6ovBhRw8cWHm29znkTmJ5N09y4e7pPFr8VlnaK"/>
+</div>
+<div>
+<p class="font-bold text-on-surface group-hover:text-primary transition-colors">Monitor UltraWide 34"</p>
+<p class="text-xs text-on-surface-variant">SKU: NEX-1102-HW</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-2.5 py-1 bg-surface-container-highest text-secondary text-[10px] font-extrabold uppercase rounded-full tracking-wide text-nowrap">Hardware Pro</span>
+</td>
+<td class="px-6 py-4">
+<div class="w-40 space-y-1.5">
+<div class="flex justify-between text-xs font-medium">
+<span class="text-on-surface">12 uds.</span>
+<span class="text-error">12%</span>
+</div>
+<div class="h-1.5 w-full bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-error rounded-full" style="width: 12%;"></div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<p class="font-bold text-on-surface">$599.99</p>
+</td>
+<td class="px-6 py-4">
+<span class="flex items-center gap-1.5 text-xs font-bold text-error">
+<span class="w-1.5 h-1.5 rounded-full bg-error animate-pulse"></span>
+                                    Bajo Stock
+                                </span>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2">
+<button class="p-2 text-on-surface-variant hover:text-primary hover:bg-primary/10 rounded-lg transition-all"><span class="material-symbols-outlined text-xl">edit</span></button>
+<button class="p-2 text-on-surface-variant hover:text-error hover:bg-error/10 rounded-lg transition-all"><span class="material-symbols-outlined text-xl">delete</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-variant/30 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-4">
+<div class="h-12 w-12 rounded-lg bg-surface-container-highest overflow-hidden border border-outline-variant/20">
+<img alt="Teclado Mecánico" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJpBMius5c4DRJUrAD19bgD0AJ50SqbpZ4dRPcmxKxEfk97PWqDcYGMaNMzRZgfufb8U2e_IIXICjQ1TJIgoBNCfmc_hSpLSiY7zqSCDyz_4gUZykjgCdLocEw2En9MBBtoqdFgUlxu4EdMN2KSN9eZvWeJ_BLL9aU_gu-DidgSpy2G7ydEgZ3m29x-Kk561-279OOMCbExfUP7IxU1_E7MJ9YCH7o33-4qbx4_OZ-xFSAwMyVO5RGJe60Xl847Q-y08s2DN7N9L3-"/>
+</div>
+<div>
+<p class="font-bold text-on-surface group-hover:text-primary transition-colors">Teclado Mecánico RGB</p>
+<p class="text-xs text-on-surface-variant">SKU: NEX-7731-EL</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-2.5 py-1 bg-surface-container-highest text-secondary text-[10px] font-extrabold uppercase rounded-full tracking-wide">Electrónica</span>
+</td>
+<td class="px-6 py-4">
+<div class="w-40 space-y-1.5">
+<div class="flex justify-between text-xs font-medium">
+<span class="text-on-surface">0 uds.</span>
+<span class="text-on-surface-variant">0%</span>
+</div>
+<div class="h-1.5 w-full bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-error-container rounded-full" style="width: 0%;"></div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<p class="font-bold text-on-surface">$129.50</p>
+</td>
+<td class="px-6 py-4">
+<span class="flex items-center gap-1.5 text-xs font-bold text-on-surface-variant">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+                                    Agotado
+                                </span>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2">
+<button class="p-2 text-on-surface-variant hover:text-primary hover:bg-primary/10 rounded-lg transition-all"><span class="material-symbols-outlined text-xl">edit</span></button>
+<button class="p-2 text-on-surface-variant hover:text-error hover:bg-error/10 rounded-lg transition-all"><span class="material-symbols-outlined text-xl">delete</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-variant/30 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-4">
+<div class="h-12 w-12 rounded-lg bg-surface-container-highest overflow-hidden border border-outline-variant/20">
+<img alt="Auriculares" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBLo_dn3EkHe0pJ4BeWumlGEN9_O0aW-kUuEhiYeMGvwS40Qv6Y9eyp2YsnI7rU6WBnVc4HWoSktCIVBLIE1pB4XMS8Fj4WeUxhFBCQYtGrumzf7glxhwtxNNCYeQRzf8AMPrPqRT2G2rY7ypHTYi1k4jkGTkoX-FiUcYptz2q6zZccQaKOHjJjDm4vF5TW_G5QjI7grsDHVqzrvQ0p7trsRQcL_xEYutJDH48mEntCwrkTDVpBDL0oU2htfaqLuWGf3XPvsOOa5qgR"/>
+</div>
+<div>
+<p class="font-bold text-on-surface group-hover:text-primary transition-colors">Auriculares Studio Pro</p>
+<p class="text-xs text-on-surface-variant">SKU: NEX-4412-EL</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-2.5 py-1 bg-surface-container-highest text-secondary text-[10px] font-extrabold uppercase rounded-full tracking-wide">Electrónica</span>
+</td>
+<td class="px-6 py-4">
+<div class="w-40 space-y-1.5">
+<div class="flex justify-between text-xs font-medium">
+<span class="text-on-surface">342 uds.</span>
+<span class="text-on-surface-variant">45%</span>
+</div>
+<div class="h-1.5 w-full bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full" style="width: 45%;"></div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<p class="font-bold text-on-surface">$349.00</p>
+</td>
+<td class="px-6 py-4">
+<span class="flex items-center gap-1.5 text-xs font-bold text-tertiary-fixed-dim">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary-fixed-dim"></span>
+                                    En Stock
+                                </span>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2">
+<button class="p-2 text-on-surface-variant hover:text-primary hover:bg-primary/10 rounded-lg transition-all"><span class="material-symbols-outlined text-xl">edit</span></button>
+<button class="p-2 text-on-surface-variant hover:text-error hover:bg-error/10 rounded-lg transition-all"><span class="material-symbols-outlined text-xl">delete</span></button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+<!-- Footer Info -->
+<div class="px-6 py-4 bg-surface-container-high/30 flex items-center justify-between">
+<div class="flex gap-4">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-tertiary-fixed-dim"></span>
+<span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Estable</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-error"></span>
+<span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Crítico</span>
+</div>
+</div>
+<div class="text-xs text-on-surface-variant italic">
+                        Sincronizado hace 2 minutos
+                    </div>
+</div>
+</div>
+</div>
+</main>
+<!-- Floating Action Button for Support (Contextual) -->
+<button class="fixed bottom-8 right-8 h-14 w-14 bg-surface-bright text-primary rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-50 group">
+<span class="material-symbols-outlined text-3xl group-hover:rotate-12 transition-transform">support_agent</span>
+</button>
+</body></html>
