@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-container-lowest": "#000000",
+              "inverse-primary": "#1854d6",
+              "on-surface-variant": "#a5abbd",
+              "surface-container-high": "#171f31",
+              "tertiary-fixed-dim": "#54eed8",
+              "tertiary": "#c6fff3",
+              "on-surface": "#e2e8fb",
+              "inverse-on-surface": "#4f5565",
+              "surface-container": "#12192a",
+              "primary-dim": "#3a6bed",
+              "primary-fixed": "#7d9cff",
+              "on-background": "#e2e8fb",
+              "secondary-fixed": "#e5c6ff",
+              "on-primary-fixed": "#000000",
+              "surface-variant": "#1d2639",
+              "on-tertiary": "#00685c",
+              "on-secondary": "#33005b",
+              "secondary": "#c180ff",
+              "on-error": "#490006",
+              "surface-bright": "#222c41",
+              "surface": "#080e1b",
+              "outline-variant": "#424857",
+              "tertiary-dim": "#48e5d0",
+              "surface-tint": "#91abff",
+              "secondary-container": "#6f00be",
+              "outline": "#6f7586",
+              "on-tertiary-fixed-variant": "#00695e",
+              "on-secondary-fixed-variant": "#7511c3",
+              "on-tertiary-fixed": "#004a41",
+              "on-primary-container": "#001d5c",
+              "surface-container-highest": "#1d2639",
+              "on-primary": "#002775",
+              "primary-fixed-dim": "#678dff",
+              "error": "#ff716c",
+              "on-secondary-fixed": "#4f0089",
+              "on-primary-fixed-variant": "#002570",
+              "secondary-dim": "#9c48ea",
+              "background": "#080e1b",
+              "tertiary-container": "#65fde6",
+              "surface-dim": "#080e1b",
+              "tertiary-fixed": "#65fde6",
+              "surface-container-low": "#0c1322",
+              "error-container": "#9f0519",
+              "on-tertiary-container": "#005e54",
+              "on-error-container": "#ffa8a3",
+              "error-dim": "#d7383b",
+              "primary-container": "#7d9cff",
+              "on-secondary-container": "#e9cdff",
+              "primary": "#91abff",
+              "inverse-surface": "#faf9ff",
+              "secondary-fixed-dim": "#dbb4ff"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Manrope"],
+              "label": ["Manrope"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Manrope', sans-serif; }
+    </style>
+</head>
+<body class="bg-background text-on-surface min-h-screen">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full flex flex-col p-4 z-50 overflow-y-auto bg-[#0c1322] dark:bg-[#0c1322] w-64 border-r border-transparent shadow-xl shadow-black/20">
+<div class="mb-8 px-4">
+<h1 class="text-lg font-black text-[#91abff] mb-2">Electric Slate</h1>
+<p class="text-xs text-on-surface-variant font-medium">Gestión de Inventario</p>
+</div>
+<nav class="flex-1 space-y-2">
+<a class="flex items-center gap-3 px-4 py-3 text-[#a5abbd] hover:text-[#f8f9fb] hover:bg-[#171f31] rounded-lg transition-all hover:translate-x-1" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-manrope text-sm tracking-normal">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#a5abbd] hover:text-[#f8f9fb] hover:bg-[#171f31] rounded-lg transition-all hover:translate-x-1" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-manrope text-sm tracking-normal">Productos</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#91abff] bg-[#12192a] rounded-lg border-l-4 border-[#4D7CFE] transition-all hover:translate-x-1" href="#">
+<span class="material-symbols-outlined">local_shipping</span>
+<span class="font-manrope text-sm tracking-normal">Proveedores</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#a5abbd] hover:text-[#f8f9fb] hover:bg-[#171f31] rounded-lg transition-all hover:translate-x-1" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="font-manrope text-sm tracking-normal">Clientes</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#a5abbd] hover:text-[#f8f9fb] hover:bg-[#171f31] rounded-lg transition-all hover:translate-x-1" href="#">
+<span class="material-symbols-outlined">shopping_cart</span>
+<span class="font-manrope text-sm tracking-normal">Compras</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#a5abbd] hover:text-[#f8f9fb] hover:bg-[#171f31] rounded-lg transition-all hover:translate-x-1" href="#">
+<span class="material-symbols-outlined">sell</span>
+<span class="font-manrope text-sm tracking-normal">Ventas</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#a5abbd] hover:text-[#f8f9fb] hover:bg-[#171f31] rounded-lg transition-all hover:translate-x-1" href="#">
+<span class="material-symbols-outlined">warehouse</span>
+<span class="font-manrope text-sm tracking-normal">Inventario</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#a5abbd] hover:text-[#f8f9fb] hover:bg-[#171f31] rounded-lg transition-all hover:translate-x-1" href="#">
+<span class="material-symbols-outlined">swap_horiz</span>
+<span class="font-manrope text-sm tracking-normal">Movimientos</span>
+</a>
+</nav>
+<div class="mt-auto pt-6 border-t border-outline-variant/20">
+<button class="w-full bg-primary-container text-on-primary-container font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 mb-4 hover:brightness-110 active:scale-95 transition-all">
+<span class="material-symbols-outlined">add_circle</span>
+<span>Nueva Entrada</span>
+</button>
+<a class="flex items-center gap-3 px-4 py-3 text-[#a5abbd] hover:text-[#f8f9fb] hover:bg-[#171f31] rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-manrope text-sm tracking-normal">Cerrar Sesión</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-64 p-8 bg-surface min-h-screen">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center px-6 sticky top-0 z-40 backdrop-blur-md bg-opacity-80 bg-[#080e1b] h-16 border-b border-[#1d2639]/50 shadow-none mb-8 -mx-8 w-[calc(100%+4rem)]">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative max-w-md w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">search</span>
+<input class="w-full bg-surface-container-highest border-none rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-primary text-on-surface placeholder:text-on-surface-variant/50" placeholder="Buscar proveedores, productos o IDs..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<button class="text-[#a5abbd] hover:text-[#f8f9fb] transition-colors duration-200">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-[#a5abbd] hover:text-[#f8f9fb] transition-colors duration-200">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="h-8 w-px bg-outline-variant/30"></div>
+<div class="flex items-center gap-3 cursor-pointer hover:bg-surface-container-high p-1 rounded-lg transition-colors">
+<div class="w-8 h-8 rounded-full bg-primary-dim flex items-center justify-center text-[10px] font-bold text-white overflow-hidden">
+<img alt="Usuario" data-alt="User profile picture thumbnail" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBfXT_5FDI6_0JNs1ufVEHRprzJ3oSFLJe6g2emaOjaOwQO_uDkxAZ13-IT8pdAbs00iqnO7OcLjAA7nspCqEli0UOSr8QamuOwvc3ly9f3ztWW_3q-3n2LscSbkRudD65p7K11CC2I4gCfSfo8k6YSu_NRsZQgIUa7-Qz96ayWqToXaMMsx_IgFw2sawVvXfEnfrILXxl4gLNq6MUfxKszsSUTY6z7bW1LSsQcbzuP1q5GBYoc4_iVAMfcC6U0mXW_WYSGXBED46PM"/>
+</div>
+<span class="font-manrope text-sm font-medium tracking-tight text-[#a5abbd]">Admin</span>
+</div>
+</div>
+</header>
+<!-- Page Hero Section -->
+<div class="flex justify-between items-end mb-8">
+<div>
+<h2 class="text-3xl font-extrabold text-on-surface tracking-tight mb-2">Directorio de Proveedores</h2>
+<p class="text-on-surface-variant">Gestiona y optimiza tu cadena de suministro con métricas en tiempo real.</p>
+</div>
+<button class="bg-gradient-to-br from-primary-dim to-primary px-6 py-3 rounded-xl font-bold text-on-primary-container flex items-center gap-2 shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">add</span>
+            Añadir Proveedor
+        </button>
+</div>
+<!-- Bento Grid: Top Suppliers -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+<!-- Supplier Card 1 -->
+<div class="bg-surface-container rounded-xl p-6 relative overflow-hidden group hover:bg-surface-container-high transition-colors">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl text-primary" style="font-variation-settings: 'FILL' 1;">local_shipping</span>
+</div>
+<div class="flex items-center gap-4 mb-6">
+<div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-3xl">precision_manufacturing</span>
+</div>
+<div>
+<h3 class="font-bold text-lg text-on-surface">TechLogistics Global</h3>
+<span class="text-xs font-bold text-primary uppercase tracking-widest">Tecnología</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container-low p-3 rounded-lg">
+<p class="text-[10px] uppercase tracking-wider text-on-surface-variant mb-1">Calificación de Cumplimiento</p>
+<p class="text-xl font-black text-tertiary">98.4%</p>
+</div>
+<div class="bg-surface-container-low p-3 rounded-lg">
+<p class="text-[10px] uppercase tracking-wider text-on-surface-variant mb-1">Pedidos Activos</p>
+<p class="text-xl font-black text-secondary">12</p>
+</div>
+</div>
+</div>
+<!-- Supplier Card 2 -->
+<div class="bg-surface-container rounded-xl p-6 relative overflow-hidden group hover:bg-surface-container-high transition-colors border-t-2 border-secondary/30">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl text-secondary" style="font-variation-settings: 'FILL' 1;">inventory</span>
+</div>
+<div class="flex items-center gap-4 mb-6">
+<div class="w-12 h-12 rounded-lg bg-secondary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary text-3xl">category</span>
+</div>
+<div>
+<h3 class="font-bold text-lg text-on-surface">Insumos del Norte</h3>
+<span class="text-xs font-bold text-secondary uppercase tracking-widest">Materia Prima</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container-low p-3 rounded-lg">
+<p class="text-[10px] uppercase tracking-wider text-on-surface-variant mb-1">Calificación de Cumplimiento</p>
+<p class="text-xl font-black text-tertiary">92.1%</p>
+</div>
+<div class="bg-surface-container-low p-3 rounded-lg">
+<p class="text-[10px] uppercase tracking-wider text-on-surface-variant mb-1">Pedidos Activos</p>
+<p class="text-xl font-black text-secondary">08</p>
+</div>
+</div>
+</div>
+<!-- Supplier Card 3 -->
+<div class="bg-surface-container rounded-xl p-6 relative overflow-hidden group hover:bg-surface-container-high transition-colors">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl text-tertiary" style="font-variation-settings: 'FILL' 1;">package_2</span>
+</div>
+<div class="flex items-center gap-4 mb-6">
+<div class="w-12 h-12 rounded-lg bg-tertiary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-tertiary text-3xl">electric_bolt</span>
+</div>
+<div>
+<h3 class="font-bold text-lg text-on-surface">Volt &amp; Amp Co.</h3>
+<span class="text-xs font-bold text-tertiary uppercase tracking-widest">Electricidad</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container-low p-3 rounded-lg">
+<p class="text-[10px] uppercase tracking-wider text-on-surface-variant mb-1">Calificación de Cumplimiento</p>
+<p class="text-xl font-black text-tertiary">100%</p>
+</div>
+<div class="bg-surface-container-low p-3 rounded-lg">
+<p class="text-[10px] uppercase tracking-wider text-on-surface-variant mb-1">Pedidos Activos</p>
+<p class="text-xl font-black text-secondary">03</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Filters & Table Section -->
+<div class="bg-surface-container-low rounded-xl p-1 overflow-hidden">
+<div class="p-6 flex flex-col md:flex-row justify-between items-center gap-4">
+<div class="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 w-full md:w-auto">
+<button class="px-4 py-2 rounded-full bg-primary text-on-primary-fixed font-bold text-xs whitespace-nowrap">Todos</button>
+<button class="px-4 py-2 rounded-full bg-surface-variant text-on-surface-variant hover:text-on-surface font-bold text-xs whitespace-nowrap transition-colors">Materia Prima</button>
+<button class="px-4 py-2 rounded-full bg-surface-variant text-on-surface-variant hover:text-on-surface font-bold text-xs whitespace-nowrap transition-colors">Hardware</button>
+<button class="px-4 py-2 rounded-full bg-surface-variant text-on-surface-variant hover:text-on-surface font-bold text-xs whitespace-nowrap transition-colors">Embalaje</button>
+<button class="px-4 py-2 rounded-full bg-surface-variant text-on-surface-variant hover:text-on-surface font-bold text-xs whitespace-nowrap transition-colors">Oficina</button>
+</div>
+<div class="flex items-center gap-3">
+<span class="text-xs text-on-surface-variant font-medium">Ordenar por:</span>
+<select class="bg-surface-variant border-none rounded-lg text-xs font-bold text-on-surface px-8 py-2 focus:ring-1 focus:ring-primary cursor-pointer">
+<option>Nombre (A-Z)</option>
+<option>Calificación</option>
+<option>Estado</option>
+</select>
+</div>
+</div>
+<!-- Table -->
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead>
+<tr class="bg-surface-container-high/50">
+<th class="px-6 py-4 text-[10px] uppercase tracking-[0.2em] font-black text-on-surface-variant">Nombre del Proveedor</th>
+<th class="px-6 py-4 text-[10px] uppercase tracking-[0.2em] font-black text-on-surface-variant">Persona de Contacto</th>
+<th class="px-6 py-4 text-[10px] uppercase tracking-[0.2em] font-black text-on-surface-variant">Categoría</th>
+<th class="px-6 py-4 text-[10px] uppercase tracking-[0.2em] font-black text-on-surface-variant">Teléfono y Email</th>
+<th class="px-6 py-4 text-[10px] uppercase tracking-[0.2em] font-black text-on-surface-variant">Estado</th>
+<th class="px-6 py-4 text-[10px] uppercase tracking-[0.2em] font-black text-on-surface-variant">Acciones</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/10">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container transition-colors group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-variant flex items-center justify-center font-black text-primary border border-outline-variant/20">TL</div>
+<span class="font-bold text-sm text-on-surface">TechLogistics Global</span>
+</div>
+</td>
+<td class="px-6 py-5 text-sm font-medium text-on-surface-variant">Carlos Méndez</td>
+<td class="px-6 py-5">
+<span class="bg-primary/10 text-primary px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">Tecnología</span>
+</td>
+<td class="px-6 py-5">
+<div class="text-xs">
+<p class="text-on-surface font-medium">+34 912 345 678</p>
+<p class="text-on-surface-variant">ventas@techlog.com</p>
+</div>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-tertiary shadow-[0_0_8px_rgba(198,255,243,0.5)]"></span>
+<span class="text-xs font-bold text-tertiary">Activo</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 hover:bg-surface-bright rounded-lg text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined text-xl">edit</span>
+</button>
+<button class="p-2 hover:bg-surface-bright rounded-lg text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined text-xl">visibility</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container transition-colors group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-variant flex items-center justify-center font-black text-secondary border border-outline-variant/20">IN</div>
+<span class="font-bold text-sm text-on-surface">Insumos del Norte</span>
+</div>
+</td>
+<td class="px-6 py-5 text-sm font-medium text-on-surface-variant">Ana Martínez</td>
+<td class="px-6 py-5">
+<span class="bg-secondary/10 text-secondary px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">Materia Prima</span>
+</td>
+<td class="px-6 py-5">
+<div class="text-xs">
+<p class="text-on-surface font-medium">+34 931 888 222</p>
+<p class="text-on-surface-variant">contacto@insumosnorte.es</p>
+</div>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-tertiary shadow-[0_0_8px_rgba(198,255,243,0.5)]"></span>
+<span class="text-xs font-bold text-tertiary">Activo</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 hover:bg-surface-bright rounded-lg text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined text-xl">edit</span>
+</button>
+<button class="p-2 hover:bg-surface-bright rounded-lg text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined text-xl">visibility</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container transition-colors group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-variant flex items-center justify-center font-black text-tertiary border border-outline-variant/20">VA</div>
+<span class="font-bold text-sm text-on-surface">Volt &amp; Amp Co.</span>
+</div>
+</td>
+<td class="px-6 py-5 text-sm font-medium text-on-surface-variant">Jordi Pujol</td>
+<td class="px-6 py-5">
+<span class="bg-tertiary/10 text-tertiary px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">Electricidad</span>
+</td>
+<td class="px-6 py-5">
+<div class="text-xs">
+<p class="text-on-surface font-medium">+34 934 555 111</p>
+<p class="text-on-surface-variant">info@voltamp.com</p>
+</div>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-error shadow-[0_0_8px_rgba(255,113,108,0.5)]"></span>
+<span class="text-xs font-bold text-error">Inactivo</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 hover:bg-surface-bright rounded-lg text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined text-xl">edit</span>
+</button>
+<button class="p-2 hover:bg-surface-bright rounded-lg text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined text-xl">visibility</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination-like Footer -->
+<div class="p-6 border-t border-outline-variant/10 flex justify-between items-center bg-surface-container-low/50">
+<p class="text-xs text-on-surface-variant font-medium">Mostrando <span class="text-on-surface">3</span> de <span class="text-on-surface">124</span> proveedores</p>
+<div class="flex gap-2">
+<button class="w-10 h-10 flex items-center justify-center rounded-lg bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg bg-primary text-on-primary-fixed font-black">1</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors">2</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+</body></html>
