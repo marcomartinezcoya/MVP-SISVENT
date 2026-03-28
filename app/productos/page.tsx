@@ -106,33 +106,21 @@ export default function ProductosPage() {
     mode: 'create' | 'edit',
   ): Promise<{ success: boolean; error?: string }> => {
     if (mode === 'edit' && selectedProduct) {
-      // ── Edición optimista ──────────────────────────────────────
       const result = await updateProducto(selectedProduct.id, data as ProductoUpdateInput);
-      if (result.error) {
-        alert(result.error);
-        return { success: false, error: result.error };
-      }
-      // Parchamos el registro en el array local sin refetch completo
-      // para que el producto permanezca visible en la misma posición de la grilla.
+      if (result.error) return { success: false, error: result.error };
+      
       if (result.data) {
         const updated = result.data;
         setProductos((prev) =>
           prev.map((p) => (p.id === updated.id ? updated : p)),
         );
       }
-      setIsModalOpen(false);
-      // Refrescamos solo las stats (totales del dashboard)
       fetchStats();
       return { success: true };
     } else {
-      // ── Creación ───────────────────────────────────────────────
       const result = await createProducto(data as ProductoCreateInput);
-      if (result.error) {
-        alert(result.error);
-        return { success: false, error: result.error };
-      }
-      setIsModalOpen(false);
-      // Refetch completo para incluir el nuevo registro y re-calcular totales
+      if (result.error) return { success: false, error: result.error };
+      
       await fetchPage(page, search, categoria);
       return { success: true };
     }

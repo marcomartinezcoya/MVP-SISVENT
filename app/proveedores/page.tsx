@@ -1,17 +1,50 @@
 'use client';
 
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
-  Proveedor,
+  ProveedorDB,
   ProveedorCreateInput,
   ProveedorUpdateInput,
-  CATEGORIAS_PROVEEDOR,
-  CategoriaProveedor,
-  CATEGORIA_STYLES,
-  MOCK_PROVEEDORES,
-  MOCK_STATS,
+  CategoriaProveedorDB,
+  getCategoriaStyle,
 } from '@/lib/types/proveedor';
 import { ProveedorFormModal } from '@/components/modules/proveedores/ProveedorFormModal';
+import {
+  getProveedores,
+  getCategorias,
+  createProveedor,
+  updateProveedor,
+  deactivateProveedor,
+} from '@/app/proveedores/actions';
+
+// ── Mock Data para Cards ──────────────────────────────────────────────────
+
+const MOCK_TOP_PROVEEDORES = [
+  {
+    id: '1',
+    nombre: 'TechLogistics Global',
+    categoria: 'Tecnología',
+    estado: 'activo',
+    calificacion: 98,
+    pedidos_activos: 12,
+  },
+  {
+    id: '2',
+    nombre: 'Volt & Amp Co.',
+    categoria: 'Electricidad',
+    estado: 'activo',
+    calificacion: 100,
+    pedidos_activos: 3,
+  },
+  {
+    id: '3',
+    nombre: 'PackSmart SAC',
+    categoria: 'Embalaje',
+    estado: 'activo',
+    calificacion: 91,
+    pedidos_activos: 6,
+  },
+];
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -24,13 +57,10 @@ function getInitials(name: string): string {
     .toUpperCase();
 }
 
-// ── Top Supplier Cards ─────────────────────────────────────────────────────
+// ── Highlight Cards (Mock Data) ──────────────────────────────────────────────
 
-function SupplierHighlightCards({ proveedores }: { proveedores: Proveedor[] }) {
-  const top3 = proveedores
-    .filter((p) => p.estado === 'activo')
-    .sort((a, b) => (b.calificacion ?? 0) - (a.calificacion ?? 0))
-    .slice(0, 3);
+function SupplierHighlightCards() {
+  const top3 = MOCK_TOP_PROVEEDORES.sort((a, b) => b.calificacion - a.calificacion).slice(0, 3);
 
   const cardAccents = [
     { icon: 'precision_manufacturing', color: 'text-primary', bg: 'bg-primary/10', dot: 'border-t-2 border-primary/30' },
@@ -44,7 +74,6 @@ function SupplierHighlightCards({ proveedores }: { proveedores: Proveedor[] }) {
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
       {top3.map((prov, idx) => {
         const accent = cardAccents[idx];
-        const style = CATEGORIA_STYLES[prov.categoria];
         return (
           <div
             key={prov.id}
@@ -81,14 +110,14 @@ function SupplierHighlightCards({ proveedores }: { proveedores: Proveedor[] }) {
                 <p className="text-[10px] uppercase tracking-wider text-on-surface-variant mb-1 font-medium">
                   Calificación
                 </p>
-                <p className="text-xl font-black text-tertiary-fixed-dim">{prov.calificacion ?? '--'}%</p>
+                <p className="text-xl font-black text-tertiary-fixed-dim">{prov.calificacion}%</p>
               </div>
               <div className="bg-surface-container-low p-3 rounded-lg">
                 <p className="text-[10px] uppercase tracking-wider text-on-surface-variant mb-1 font-medium">
                   Pedidos Activos
                 </p>
                 <p className="text-xl font-black text-secondary">
-                  {String(prov.pedidos_activos ?? 0).padStart(2, '0')}
+                  {String(prov.pedidos_activos).padStart(2, '0')}
                 </p>
               </div>
             </div>
@@ -102,53 +131,61 @@ function SupplierHighlightCards({ proveedores }: { proveedores: Proveedor[] }) {
 // ── Main Page ──────────────────────────────────────────────────────────────
 
 export default function ProveedoresPage() {
-  const [proveedores, setProveedores] = useState<Proveedor[]>(MOCK_PROVEEDORES);
+  // ── Data state
+  const [proveedores, setProveedores] = useState<ProveedorDB[]>([]);
+  const [categorias, setCategorias] = useState<CategoriaProveedorDB[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // ── Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedProveedor, setSelectedProveedor] = useState<Proveedor | null>(null);
+  const [selectedProveedor, setSelectedProveedor] = useState<ProveedorDB | null>(null);
 
+  // ── Filter state
   const [searchInput, setSearchInput] = useState('');
-  const [categoriaFilter, setCategoriaFilter] = useState<'Todos' | CategoriaProveedor>('Todos');
-
+  const [activeSearch, setActiveSearch] = useState('');
+  const [categoriaFilter, setCategoriaFilter] = useState('');
   const [page, setPage] = useState(1);
   const limit = 10;
-  
+
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [activeSearch, setActiveSearch] = useState('');
 
-  // ── Derived data ──────────────────────────────────────────────────────
-  const filtered = useMemo(() => {
-    let list = [...proveedores];
+  // ── Derived pagination ─────────────────────────────────────────────────
+  const totalPages = Math.ceil(total / limit);
+  const fromItem = total === 0 ? 0 : (page - 1) * limit + 1;
+  const toItem = Math.min(page * limit, total);
 
-    if (activeSearch) {
-      const q = activeSearch.toLowerCase();
-      list = list.filter(
-        (p) =>
-          p.nombre.toLowerCase().includes(q) ||
-          p.ruc.includes(q) ||
-          p.contacto.toLowerCase().includes(q) ||
-          p.email.toLowerCase().includes(q),
-      );
+  // ── Fetch helpers ──────────────────────────────────────────────────────
+
+  const fetchPageData = useCallback(async (p: number, search: string, catId: string) => {
+    setLoading(true);
+    setError(null);
+    const result = await getProveedores({ page: p, limit, search, categoria_id: catId });
+    if (result.error) {
+      setError(result.error);
+    } else {
+      setProveedores(result.data.data);
+      setTotal(result.data.total);
     }
+    setLoading(false);
+  }, []);
 
-    if (categoriaFilter !== 'Todos') {
-      list = list.filter((p) => p.categoria === categoriaFilter);
-    }
+  const fetchCategorias = useCallback(async () => {
+    const result = await getCategorias();
+    if (!result.error) setCategorias(result.data);
+  }, []);
 
-    list.sort((a, b) => a.nombre.localeCompare(b.nombre));
-
-    return list;
-  }, [proveedores, activeSearch, categoriaFilter]);
-
-  const totalPages = Math.ceil(filtered.length / limit);
-  const fromItem = filtered.length === 0 ? 0 : (page - 1) * limit + 1;
-  const toItem = Math.min(page * limit, filtered.length);
-
-  const paginatedProveedores = useMemo(() => {
-    const start = (page - 1) * limit;
-    return filtered.slice(start, start + limit);
-  }, [filtered, page]);
+  // ── Initial load ───────────────────────────────────────────────────────
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchCategorias();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchPageData(1, '', '');
+  }, [fetchCategorias, fetchPageData]);
 
   // ── Handlers ──────────────────────────────────────────────────────────
+
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchInput(value);
@@ -156,12 +193,20 @@ export default function ProveedoresPage() {
     searchTimeout.current = setTimeout(() => {
       setPage(1);
       setActiveSearch(value);
+      fetchPageData(1, value, categoriaFilter);
     }, 350);
   };
 
   const handleCategoriaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    setCategoriaFilter(val);
     setPage(1);
-    setCategoriaFilter(e.target.value as 'Todos' | CategoriaProveedor);
+    fetchPageData(1, activeSearch, val);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+    fetchPageData(newPage, activeSearch, categoriaFilter);
   };
 
   const handleOpenNew = () => {
@@ -169,43 +214,32 @@ export default function ProveedoresPage() {
     setIsModalOpen(true);
   };
 
-  const handleOpenEdit = (p: Proveedor) => {
+  const handleOpenEdit = (p: ProveedorDB) => {
     setSelectedProveedor(p);
     setIsModalOpen(true);
   };
 
-  const handleToggleStatus = (id: string) => {
-    setProveedores((prev) =>
-      prev.map((p) =>
-        p.id === id
-          ? { ...p, estado: p.estado === 'activo' ? 'inactivo' : 'activo' }
-          : p,
-      ),
-    );
+  const handleDeactivate = async (id: string) => {
+    const result = await deactivateProveedor(id);
+    if (!result.error) {
+      await fetchPageData(page, activeSearch, categoriaFilter);
+    }
   };
 
-  // Mock save — replace with real server action when ready
   const handleSave = async (
     data: ProveedorCreateInput | ProveedorUpdateInput,
     mode: 'create' | 'edit',
   ): Promise<{ success: boolean; error?: string }> => {
     if (mode === 'edit' && selectedProveedor) {
-      setProveedores((prev) =>
-        prev.map((p) =>
-          p.id === selectedProveedor.id ? { ...p, ...(data as ProveedorUpdateInput) } : p,
-        ),
-      );
+      const result = await updateProveedor(selectedProveedor.id, data as ProveedorUpdateInput);
+      if (result.error) return { success: false, error: result.error };
     } else {
-      const newProveedor: Proveedor = {
-        id: String(Date.now()),
-        ...(data as ProveedorCreateInput),
-        calificacion: 100,
-        pedidos_activos: 0,
-        created_at: new Date().toISOString(),
-      };
-      setProveedores((prev) => [newProveedor, ...prev]);
-      setPage(1); // Go to first page to see new item
+      const result = await createProveedor(data as ProveedorCreateInput);
+      if (result.error) return { success: false, error: result.error };
     }
+    // Refresh list
+    await fetchPageData(mode === 'create' ? 1 : page, activeSearch, categoriaFilter);
+    if (mode === 'create') setPage(1);
     return { success: true };
   };
 
@@ -237,58 +271,66 @@ export default function ProveedoresPage() {
         </button>
       </div>
 
-      {/* ── Top Supplier Highlight Cards ──────────────────────────────── */}
-      <SupplierHighlightCards proveedores={proveedores} />
+      {/* ── Highlight Cards ────────────────────────────────────────────────── */}
+      <SupplierHighlightCards />
+
+      {/* ── Error banner ───────────────────────────────────────────────── */}
+      {error && (
+        <div className="mb-4 flex items-center gap-2 px-4 py-3 bg-error/10 border border-error/30 rounded-lg text-sm text-error">
+          <span className="material-symbols-outlined text-base">error</span>
+          {error}
+        </div>
+      )}
 
       {/* ── Filters & Table Section ───────────────────────────────────── */}
       <div className="bg-surface-container-low rounded-xl overflow-hidden border border-outline-variant/10 shadow-2xl shadow-black/40">
-        {/* Table Controls (similar to productos) */}
+        {/* Table Controls */}
         <div className="p-6 flex flex-col md:flex-row gap-4 items-center justify-between mb-4">
-        <div className="flex items-center gap-4 w-full md:w-auto">
-          <div className="relative w-full md:w-72">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
-            <input
-              className="w-full bg-surface-container border border-outline-variant/20 rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-primary/40 focus:border-primary text-on-surface transition-all outline-none"
-              placeholder="Buscar por nombre, RUC o email..."
-              type="text"
-              value={searchInput}
-              onChange={handleSearchChange}
-            />
-          </div>
-          <select
-            className="bg-surface-container border border-outline-variant/20 rounded-lg px-4 py-2 text-sm text-on-surface focus:ring-2 focus:ring-primary/40 transition-all outline-none appearance-none cursor-pointer"
-            onChange={handleCategoriaChange}
-            value={categoriaFilter}
-          >
-            <option value="Todos">Categoría: Todas</option>
-            {CATEGORIAS_PROVEEDOR.map((cat) => (
-              <option key={cat} value={cat}>{cat}</option>
-            ))}
-          </select>
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-on-surface-variant font-medium">
-            Mostrar {fromItem}-{toItem} de {filtered.length}
-          </span>
-          <div className="flex gap-1">
-            <button
-              disabled={page <= 1}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              className="p-1.5 bg-surface-container-highest rounded-md text-on-surface-variant hover:text-on-surface transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          <div className="flex items-center gap-4 w-full md:w-auto">
+            <div className="relative w-full md:w-72">
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+              <input
+                className="w-full bg-surface-container border border-outline-variant/20 rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-primary/40 focus:border-primary text-on-surface transition-all outline-none"
+                placeholder="Buscar por nombre, contacto o email..."
+                type="text"
+                value={searchInput}
+                onChange={handleSearchChange}
+              />
+            </div>
+            <select
+              className="bg-surface-container border border-outline-variant/20 rounded-lg px-4 py-2 text-sm text-on-surface focus:ring-2 focus:ring-primary/40 transition-all outline-none appearance-none cursor-pointer"
+              onChange={handleCategoriaChange}
+              value={categoriaFilter}
             >
-              <span className="material-symbols-outlined text-lg">chevron_left</span>
-            </button>
-            <button
-              disabled={page >= totalPages || totalPages === 0}
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              className="p-1.5 bg-surface-container-highest rounded-md text-on-surface-variant hover:text-on-surface transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              <span className="material-symbols-outlined text-lg">chevron_right</span>
-            </button>
+              <option value="">Categoría: Todas</option>
+              {categorias.map((cat) => (
+                <option key={cat.id} value={cat.id}>{cat.nombre}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-on-surface-variant font-medium">
+              {total === 0 ? 'Sin resultados' : `Mostrando ${fromItem}-${toItem} de ${total}`}
+            </span>
+            <div className="flex gap-1">
+              <button
+                disabled={page <= 1 || loading}
+                onClick={() => handlePageChange(Math.max(1, page - 1))}
+                className="p-1.5 bg-surface-container-highest rounded-md text-on-surface-variant hover:text-on-surface transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <span className="material-symbols-outlined text-lg">chevron_left</span>
+              </button>
+              <button
+                disabled={page >= totalPages || totalPages === 0 || loading}
+                onClick={() => handlePageChange(Math.min(totalPages, page + 1))}
+                className="p-1.5 bg-surface-container-highest rounded-md text-on-surface-variant hover:text-on-surface transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <span className="material-symbols-outlined text-lg">chevron_right</span>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
         {/* ── Table ─────────────────────────────────────────────────── */}
         <div className="overflow-x-auto">
@@ -319,7 +361,25 @@ export default function ProveedoresPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/10">
-              {paginatedProveedores.length === 0 ? (
+              {loading ? (
+                // Skeleton rows
+                Array.from({ length: 5 }).map((_, i) => (
+                  <tr key={i} className="animate-pulse">
+                    <td className="px-6 py-5">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-surface-variant" />
+                        <div className="h-4 w-32 bg-surface-variant rounded" />
+                      </div>
+                    </td>
+                    {Array.from({ length: 5 }).map((_, j) => (
+                      <td key={j} className="px-6 py-5">
+                        <div className="h-4 w-24 bg-surface-variant rounded" />
+                      </td>
+                    ))}
+                    <td className="px-6 py-5" />
+                  </tr>
+                ))
+              ) : proveedores.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-6 py-16 text-center">
                     <div className="flex flex-col items-center gap-3 text-on-surface-variant">
@@ -332,10 +392,11 @@ export default function ProveedoresPage() {
                   </td>
                 </tr>
               ) : (
-                paginatedProveedores.map((prov) => {
-                  const style = CATEGORIA_STYLES[prov.categoria];
+                proveedores.map((prov) => {
+                  const categoriaNombre = prov.categorias_proveedor?.nombre ?? null;
+                  const style = getCategoriaStyle(categoriaNombre);
                   const initials = getInitials(prov.nombre);
-                  const isActivo = prov.estado === 'activo';
+                  const isActivo = prov.estado === true;
 
                   return (
                     <tr
@@ -367,23 +428,27 @@ export default function ProveedoresPage() {
 
                       {/* Contacto */}
                       <td className="px-6 py-5 text-sm font-medium text-on-surface-variant">
-                        {prov.contacto}
+                        {prov.contacto ?? '—'}
                       </td>
 
                       {/* Categoría Badge */}
                       <td className="px-6 py-5">
-                        <span
-                          className={`${style.bg} ${style.text} px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider whitespace-nowrap`}
-                        >
-                          {prov.categoria}
-                        </span>
+                        {categoriaNombre ? (
+                          <span
+                            className={`${style.bg} ${style.text} px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider whitespace-nowrap`}
+                          >
+                            {categoriaNombre}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-on-surface-variant/50">—</span>
+                        )}
                       </td>
 
                       {/* Teléfono y Email */}
                       <td className="px-6 py-5">
                         <div className="text-xs space-y-0.5">
-                          <p className="text-on-surface font-medium">{prov.telefono}</p>
-                          <p className="text-on-surface-variant">{prov.email}</p>
+                          <p className="text-on-surface font-medium">{prov.telefono ?? '—'}</p>
+                          <p className="text-on-surface-variant">{prov.email ?? '—'}</p>
                         </div>
                       </td>
 
@@ -417,19 +482,15 @@ export default function ProveedoresPage() {
                           >
                             <span className="material-symbols-outlined text-xl">edit</span>
                           </button>
-                          <button
-                            onClick={() => handleToggleStatus(prov.id)}
-                            className={`p-2 rounded-lg text-on-surface-variant transition-all ${
-                              isActivo
-                                ? 'hover:bg-error/10 hover:text-error'
-                                : 'hover:bg-tertiary/10 hover:text-tertiary'
-                            }`}
-                            title={isActivo ? 'Desactivar proveedor' : 'Activar proveedor'}
-                          >
-                            <span className="material-symbols-outlined text-xl">
-                              {isActivo ? 'block' : 'check_circle'}
-                            </span>
-                          </button>
+                          {isActivo && (
+                            <button
+                              onClick={() => handleDeactivate(prov.id)}
+                              className="p-2 rounded-lg text-on-surface-variant hover:bg-error/10 hover:text-error transition-all"
+                              title="Desactivar proveedor"
+                            >
+                              <span className="material-symbols-outlined text-xl">block</span>
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -453,7 +514,7 @@ export default function ProveedoresPage() {
             </div>
           </div>
           <div className="text-xs text-on-surface-variant italic">
-            {filtered.length} proveedores encontrados
+            {total} proveedores encontrados
           </div>
         </div>
       </div>
@@ -463,6 +524,7 @@ export default function ProveedoresPage() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         proveedor={selectedProveedor}
+        categorias={categorias}
         onSave={handleSave}
       />
     </div>

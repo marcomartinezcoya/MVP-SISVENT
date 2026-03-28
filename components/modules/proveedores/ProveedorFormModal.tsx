@@ -2,43 +2,45 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-  Proveedor,
+  ProveedorDB,
   ProveedorCreateInput,
   ProveedorUpdateInput,
-  CATEGORIAS_PROVEEDOR,
-  EstadoProveedor,
-  CategoriaProveedor,
+  CategoriaProveedorDB,
 } from '@/lib/types/proveedor';
 
 interface ProveedorFormModalProps {
   isOpen: boolean;
   onClose: () => void;
-  proveedor: Proveedor | null;
+  proveedor: ProveedorDB | null;
+  categorias: CategoriaProveedorDB[];
   onSave: (
     data: ProveedorCreateInput | ProveedorUpdateInput,
     mode: 'create' | 'edit',
   ) => Promise<{ success: boolean; error?: string }>;
 }
 
-const EMPTY_FORM: ProveedorCreateInput = {
-  nombre: '',
-  ruc: '',
-  contacto: '',
-  categoria: 'Tecnología',
-  telefono: '',
-  email: '',
-  direccion: '',
-  estado: 'activo',
-};
+const makeEmptyForm = (defaultCategoriaId: string): ProveedorCreateInput => ({
+  nombre:      '',
+  ruc:         '',
+  contacto:    '',
+  telefono:    '',
+  email:       '',
+  categoria_id: defaultCategoriaId,
+  direccion:   '',
+  estado:      true,
+});
 
 export function ProveedorFormModal({
   isOpen,
   onClose,
   proveedor,
+  categorias,
   onSave,
 }: ProveedorFormModalProps) {
-  const [form, setForm] = useState<ProveedorCreateInput>(EMPTY_FORM);
+  const defaultCatId = categorias[0]?.id ?? '';
+  const [form, setForm] = useState<ProveedorCreateInput>(makeEmptyForm(defaultCatId));
   const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
   const [errors, setErrors] = useState<Partial<Record<keyof ProveedorCreateInput, string>>>({});
 
   const isEditing = proveedor !== null;
@@ -47,22 +49,27 @@ export function ProveedorFormModal({
   useEffect(() => {
     if (isOpen) {
       if (proveedor) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setForm({
-          nombre: proveedor.nombre,
-          ruc: proveedor.ruc,
-          contacto: proveedor.contacto,
-          categoria: proveedor.categoria,
-          telefono: proveedor.telefono,
-          email: proveedor.email,
-          direccion: proveedor.direccion ?? '',
-          estado: proveedor.estado,
+          nombre:      proveedor.nombre,
+          ruc:         proveedor.ruc,
+          contacto:    proveedor.contacto ?? '',
+          telefono:    proveedor.telefono ?? '',
+          email:       proveedor.email ?? '',
+          categoria_id: proveedor.categoria_id ?? defaultCatId,
+          direccion:   proveedor.direccion ?? '',
+          estado:      proveedor.estado,
         });
       } else {
-        setForm(EMPTY_FORM);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setForm(makeEmptyForm(defaultCatId));
       }
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setErrors({});
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setFormError(null);
     }
-  }, [isOpen, proveedor]);
+  }, [isOpen, proveedor, defaultCatId]);
 
   // Close on Escape
   useEffect(() => {
@@ -78,10 +85,11 @@ export function ProveedorFormModal({
     if (!form.nombre.trim()) newErrors.nombre = 'El nombre es requerido';
     if (!form.ruc.trim()) newErrors.ruc = 'El RUC es requerido';
     else if (!/^\d{11}$/.test(form.ruc.trim())) newErrors.ruc = 'El RUC debe tener 11 dígitos';
-    if (!form.contacto.trim()) newErrors.contacto = 'La persona de contacto es requerida';
-    if (!form.telefono.trim()) newErrors.telefono = 'El teléfono es requerido';
+    if (!form.contacto?.trim()) newErrors.contacto = 'La persona de contacto es requerida';
+    if (!form.telefono?.trim()) newErrors.telefono = 'El teléfono es requerido';
     if (!form.email.trim()) newErrors.email = 'El email es requerido';
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) newErrors.email = 'Email inválido';
+    if (!form.categoria_id) newErrors.categoria_id = 'La categoría es requerida';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -94,15 +102,21 @@ export function ProveedorFormModal({
     if (errors[name as keyof typeof errors]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }));
     }
+    setFormError(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
     setSaving(true);
+    setFormError(null);
     const result = await onSave(form, isEditing ? 'edit' : 'create');
     setSaving(false);
-    if (result.success) onClose();
+    if (result.success) {
+      onClose();
+    } else {
+      setFormError(result.error ?? 'Error desconocido al guardar');
+    }
   };
 
   if (!isOpen) return null;
@@ -156,6 +170,15 @@ export function ProveedorFormModal({
         {/* Form */}
         <form onSubmit={handleSubmit} noValidate>
           <div className="px-6 py-5 space-y-4 max-h-[60vh] overflow-y-auto">
+
+            {/* Server-level error banner */}
+            {formError && (
+              <div className="flex items-center gap-2 px-4 py-3 bg-error/10 border border-error/30 rounded-lg text-sm text-error">
+                <span className="material-symbols-outlined text-base shrink-0">error</span>
+                {formError}
+              </div>
+            )}
+
             {/* Nombre */}
             <div>
               <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1.5">
@@ -214,7 +237,7 @@ export function ProveedorFormModal({
                 id="proveedor-contacto"
                 name="contacto"
                 type="text"
-                value={form.contacto}
+                value={form.contacto ?? ''}
                 onChange={handleChange}
                 placeholder="Nombre completo"
                 className={`w-full bg-surface-container border rounded-lg px-4 py-2.5 text-sm text-on-surface placeholder:text-on-surface-variant/40 focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none transition-all ${
@@ -239,7 +262,7 @@ export function ProveedorFormModal({
                   id="proveedor-telefono"
                   name="telefono"
                   type="tel"
-                  value={form.telefono}
+                  value={form.telefono ?? ''}
                   onChange={handleChange}
                   placeholder="+51 999 000 000"
                   className={`w-full bg-surface-container border rounded-lg px-4 py-2.5 text-sm text-on-surface placeholder:text-on-surface-variant/40 focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none transition-all ${
@@ -279,17 +302,23 @@ export function ProveedorFormModal({
                 </label>
                 <select
                   id="proveedor-categoria"
-                  name="categoria"
-                  value={form.categoria}
+                  name="categoria_id"
+                  value={form.categoria_id}
                   onChange={handleChange}
-                  className="w-full bg-surface-container border border-outline-variant/20 rounded-lg px-4 py-2.5 text-sm text-on-surface focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none transition-all appearance-none cursor-pointer"
+                  className={`w-full bg-surface-container border rounded-lg px-4 py-2.5 text-sm text-on-surface focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none transition-all appearance-none cursor-pointer ${
+                    errors.categoria_id ? 'border-error/60' : 'border-outline-variant/20'
+                  }`}
                 >
-                  {CATEGORIAS_PROVEEDOR.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
+                  <option value="">Selecciona una categoría</option>
+                  {categorias.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.nombre}
                     </option>
                   ))}
                 </select>
+                {errors.categoria_id && (
+                  <p className="mt-1 text-xs text-error">{errors.categoria_id}</p>
+                )}
               </div>
               <div>
                 <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1.5">
@@ -298,12 +327,14 @@ export function ProveedorFormModal({
                 <select
                   id="proveedor-estado"
                   name="estado"
-                  value={form.estado}
-                  onChange={handleChange}
+                  value={form.estado ? 'true' : 'false'}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, estado: e.target.value === 'true' }))
+                  }
                   className="w-full bg-surface-container border border-outline-variant/20 rounded-lg px-4 py-2.5 text-sm text-on-surface focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none transition-all appearance-none cursor-pointer"
                 >
-                  <option value="activo">Activo</option>
-                  <option value="inactivo">Inactivo</option>
+                  <option value="true">Activo</option>
+                  <option value="false">Inactivo</option>
                 </select>
               </div>
             </div>

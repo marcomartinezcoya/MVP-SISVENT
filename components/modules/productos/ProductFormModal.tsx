@@ -48,18 +48,15 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState(EMPTY_FORM);
-  // URL de imagen: puede venir de la DB (edición) o del Storage tras subida
   const [imageUrl, setImageUrl] = useState<string>('');
-  // Archivo pendiente de subir (null = no cambió)
   const [pendingFile, setPendingFile] = useState<File | null>(null);
-  // Preview local inmediata (object URL)
   const [localPreview, setLocalPreview] = useState<string>('');
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
-  const [uploadError, setUploadError] = useState<string>('');
+  const [formError, setFormError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Partial<Record<keyof typeof EMPTY_FORM, string>>>({});
 
-  // ── Limpieza de object URLs para evitar memory leaks ─────────────
   const clearLocalPreview = useCallback(() => {
     if (localPreview) {
       URL.revokeObjectURL(localPreview);
@@ -67,7 +64,6 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
     }
   }, [localPreview]);
 
-  // ── Poblar el formulario cuando cambia el producto o se abre ─────
   useEffect(() => {
     if (product) {
       setFormData({
@@ -84,47 +80,44 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       setFormData(EMPTY_FORM);
       setImageUrl('');
     }
-    // Limpiar archivo pendiente y preview al abrir/cerrar
     setPendingFile(null);
     clearLocalPreview();
-    setUploadError('');
+    setFormError(null);
+    setErrors({});
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product, isOpen]);
 
-  // ── Manejo de cambios simples ─────────────────────────────────────
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name as keyof typeof EMPTY_FORM]) {
+      setErrors((prev) => ({ ...prev, [name]: undefined }));
+    }
+    setFormError(null);
   };
 
-  // ── Selección de archivo ──────────────────────────────────────────
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validar tipo
     if (!file.type.startsWith('image/')) {
-      setUploadError('El archivo seleccionado no es una imagen válida.');
+      setFormError('El archivo seleccionado no es una imagen válida.');
       return;
     }
-    // Validar tamaño (máx 5 MB)
     if (file.size > 5 * 1024 * 1024) {
-      setUploadError('La imagen no debe superar los 5 MB.');
+      setFormError('La imagen no debe superar los 5 MB.');
       return;
     }
 
-    setUploadError('');
+    setFormError(null);
     clearLocalPreview();
     const objectUrl = URL.createObjectURL(file);
     setLocalPreview(objectUrl);
     setPendingFile(file);
   };
 
-  // ── Upload directo browser → Supabase Storage ─────────────────────
-  // NO pasa por Server Action (evita límite 1MB de Next.js).
-  // Solo la URL pública resultante (string) se envía al servidor.
   const uploadPendingFile = async (): Promise<string | null> => {
     if (!pendingFile) return null;
     setIsUploadingImage(true);
@@ -140,7 +133,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
         });
 
       if (error) {
-        setUploadError(`Error al subir imagen: ${error.message}`);
+        setFormError(`Error al subir imagen: ${error.message}`);
         return null;
       }
 
@@ -150,27 +143,37 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
 
       return urlData.publicUrl;
     } catch (err) {
-      setUploadError(err instanceof Error ? err.message : 'Error desconocido al subir');
+      setFormError(err instanceof Error ? err.message : 'Error desconocido al subir');
       return null;
     } finally {
       setIsUploadingImage(false);
     }
   };
 
+  const validate = (): boolean => {
+    const newErrors: typeof errors = {};
+    if (!formData.nombre.trim()) newErrors.nombre = 'El nombre es obligatorio';
+    if (!formData.categoria.trim()) newErrors.categoria = 'La categoría es obligatoria';
+    if (formData.precio_compra === '' || isNaN(parseFloat(formData.precio_compra))) newErrors.precio_compra = 'Requerido';
+    if (formData.precio_venta === '' || isNaN(parseFloat(formData.precio_venta))) newErrors.precio_venta = 'Requerido';
+    if (formData.stock_actual === '' || isNaN(parseInt(formData.stock_actual, 10))) newErrors.stock_actual = 'Requerido';
+    if (formData.stock_minimo === '' || isNaN(parseInt(formData.stock_minimo, 10))) newErrors.stock_minimo = 'Requerido';
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
-  // ── Envío del formulario ─────────────────────────────────────────
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validate()) return;
     setIsSubmitting(true);
-    setUploadError('');
+    setFormError(null);
 
     try {
-      // Subir imagen primero si hay una pendiente
       let finalImageUrl = imageUrl;
       if (pendingFile) {
         const uploaded = await uploadPendingFile();
         if (uploaded === null) {
-          // uploadPendingFile ya seteó el error
           return;
         }
         finalImageUrl = uploaded;
@@ -178,8 +181,9 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
 
       const estadoBool = formData.estado === 'Activo';
 
+      let payload: ProductoCreateInput | ProductoUpdateInput;
       if (isEditMode && product) {
-        const payload: ProductoUpdateInput = {
+        payload = {
           nombre: formData.nombre,
           sku: product.sku,
           categoria: formData.categoria,
@@ -190,9 +194,8 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
           imagen_url: finalImageUrl || null,
           estado: estadoBool,
         };
-        await onSave(payload, 'edit');
       } else {
-        const payload: ProductoCreateInput = {
+        payload = {
           nombre: formData.nombre,
           categoria: formData.categoria,
           precio_compra: parseFloat(formData.precio_compra) || 0,
@@ -202,20 +205,26 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
           imagen_url: finalImageUrl || null,
           estado: estadoBool,
         };
-        await onSave(payload, 'create');
+      }
+
+      const result = await onSave(payload, isEditMode ? 'edit' : 'create');
+      if (result.success) {
+        onClose();
+      } else {
+        setFormError(result.error ?? 'Error desconocido al guardar');
       }
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // ── Preview a mostrar: local (recién elegida) o remota (existente) ─
   const displayImage = localPreview || imageUrl || null;
-
   const isBusy = isSubmitting || isUploadingImage;
 
-  const inputClass =
-    'w-full bg-surface-container border border-outline-variant/20 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/40 focus:border-primary text-on-surface transition-all outline-none placeholder:text-on-surface-variant/50';
+  const getInputClass = (fieldName: keyof typeof EMPTY_FORM) =>
+    `w-full bg-surface-container border rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/40 focus:border-primary text-on-surface transition-all outline-none placeholder:text-on-surface-variant/50 ${
+      errors[fieldName] ? 'border-error/60 focus:ring-error/40' : 'border-outline-variant/20'
+    }`;
 
   const readonlyClass =
     'w-full bg-surface-container-highest border border-outline-variant/10 rounded-lg px-4 py-2.5 text-sm text-on-surface-variant/70 cursor-not-allowed select-none';
@@ -236,15 +245,23 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       maxWidth="max-w-2xl"
     >
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        
+        {/* Server-level error banner */}
+        {formError && (
+          <div className="flex items-center gap-2 px-4 py-3 bg-error/10 border border-error/30 rounded-lg text-sm text-error">
+            <span className="material-symbols-outlined text-base shrink-0">error</span>
+            {formError}
+          </div>
+        )}
 
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          
           {/* ── Imagen ──────────────────────────────────────────── */}
           <div className="md:col-span-2">
             <label className="text-sm font-medium text-on-surface-variant block mb-2">
-              Imagen del Producto
+              Imagen del Producto <span className="text-on-surface-variant/50 font-normal text-xs normal-case">(opcional)</span>
             </label>
             <div className="flex items-start gap-4">
-              {/* Preview */}
               <div className="shrink-0 h-24 w-24 rounded-xl bg-surface-container-highest border border-outline-variant/20 overflow-hidden flex items-center justify-center">
                 {displayImage ? (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -260,7 +277,6 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                 )}
               </div>
 
-              {/* Controles */}
               <div className="flex-1 space-y-2">
                 <input
                   ref={fileInputRef}
@@ -302,34 +318,32 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                   </p>
                 )}
 
-                {uploadError && (
-                  <p className="text-xs text-error flex items-center gap-1">
-                    <span className="material-symbols-outlined text-sm">error</span>
-                    {uploadError}
-                  </p>
-                )}
-
                 <p className="text-[11px] text-on-surface-variant/50">
-                  PNG, JPG, WEBP · Máx 5 MB · Solo se guarda la URL, nunca el archivo en la base de datos.
+                  PNG, JPG, WEBP · Máx 5 MB · Solo se guarda la URL.
                 </p>
               </div>
             </div>
           </div>
 
           {/* ── Nombre ───────────────────────────────────────────── */}
-          <div className="space-y-1.5">
+          <div className="space-y-1.5 md:col-span-2">
             <label className="text-sm font-medium text-on-surface-variant">
-              Nombre del Producto
+              Nombre del Producto <span className="text-error">*</span>
             </label>
             <input
-              required
               name="nombre"
               value={formData.nombre}
               onChange={handleChange}
-              className={inputClass}
+              className={getInputClass('nombre')}
               placeholder="Ej: Laptop XPS 15"
               disabled={isBusy}
             />
+            {errors.nombre && (
+              <p className="mt-1 text-xs text-error flex items-center gap-1">
+                <span className="material-symbols-outlined text-sm">error</span>
+                {errors.nombre}
+              </p>
+            )}
           </div>
 
           {/* ── Código (solo edición, readonly) ───────────────────── */}
@@ -353,13 +367,13 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
           {/* ── Categoría ─────────────────────────────────────────── */}
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-on-surface-variant">
-              Categoría
+              Categoría <span className="text-error">*</span>
             </label>
             <select
               name="categoria"
               value={formData.categoria}
               onChange={handleChange}
-              className={inputClass}
+              className={`${getInputClass('categoria')} appearance-none cursor-pointer`}
               disabled={isBusy}
             >
               <option value="Electrónica">Electrónica</option>
@@ -370,80 +384,106 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
               <option value="Oficina">Oficina</option>
               <option value="Redes">Redes</option>
             </select>
+            {errors.categoria && (
+              <p className="mt-1 text-xs text-error flex items-center gap-1">
+                <span className="material-symbols-outlined text-sm">error</span>
+                {errors.categoria}
+              </p>
+            )}
           </div>
 
           {/* ── Precio Venta ──────────────────────────────────────── */}
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-on-surface-variant">
-              Precio Venta (S/)
+              Precio Venta (S/) <span className="text-error">*</span>
             </label>
             <input
-              required
               type="number"
               step="0.01"
               min="0"
               name="precio_venta"
               value={formData.precio_venta}
               onChange={handleChange}
-              className={inputClass}
+              className={getInputClass('precio_venta')}
               placeholder="0.00"
               disabled={isBusy}
             />
+            {errors.precio_venta && (
+              <p className="mt-1 text-xs text-error flex items-center gap-1">
+                <span className="material-symbols-outlined text-sm">error</span>
+                {errors.precio_venta}
+              </p>
+            )}
           </div>
 
           {/* ── Precio Compra ─────────────────────────────────────── */}
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-on-surface-variant">
-              Precio Compra (S/)
+              Precio Compra (S/) <span className="text-error">*</span>
             </label>
             <input
-              required
               type="number"
               step="0.01"
               min="0"
               name="precio_compra"
               value={formData.precio_compra}
               onChange={handleChange}
-              className={inputClass}
+              className={getInputClass('precio_compra')}
               placeholder="0.00"
               disabled={isBusy}
             />
+            {errors.precio_compra && (
+              <p className="mt-1 text-xs text-error flex items-center gap-1">
+                <span className="material-symbols-outlined text-sm">error</span>
+                {errors.precio_compra}
+              </p>
+            )}
           </div>
 
           {/* ── Stock Actual ──────────────────────────────────────── */}
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-on-surface-variant">
-              Stock Actual
+              Stock Actual <span className="text-error">*</span>
             </label>
             <input
-              required
               type="number"
               min="0"
               name="stock_actual"
               value={formData.stock_actual}
               onChange={handleChange}
-              className={inputClass}
+              className={getInputClass('stock_actual')}
               placeholder="0"
               disabled={isBusy}
             />
+            {errors.stock_actual && (
+              <p className="mt-1 text-xs text-error flex items-center gap-1">
+                <span className="material-symbols-outlined text-sm">error</span>
+                {errors.stock_actual}
+              </p>
+            )}
           </div>
 
           {/* ── Stock Mínimo ──────────────────────────────────────── */}
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-on-surface-variant">
-              Stock Mínimo
+              Stock Mínimo <span className="text-error">*</span>
             </label>
             <input
-              required
               type="number"
               min="0"
               name="stock_minimo"
               value={formData.stock_minimo}
               onChange={handleChange}
-              className={inputClass}
+              className={getInputClass('stock_minimo')}
               placeholder="10"
               disabled={isBusy}
             />
+             {errors.stock_minimo && (
+              <p className="mt-1 text-xs text-error flex items-center gap-1">
+                <span className="material-symbols-outlined text-sm">error</span>
+                {errors.stock_minimo}
+              </p>
+            )}
           </div>
 
           {/* ── Estado ───────────────────────────────────────────── */}
@@ -455,7 +495,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
               name="estado"
               value={formData.estado}
               onChange={handleChange}
-              className={inputClass}
+              className={`${getInputClass('estado')} appearance-none cursor-pointer`}
               disabled={isBusy}
             >
               <option value="Activo">Activo</option>
