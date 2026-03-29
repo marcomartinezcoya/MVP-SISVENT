@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Electric Inventory - Gestión de Compras</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-error-container": "#ffa8a3",
+              "outline": "#6f7586",
+              "on-secondary-container": "#e9cdff",
+              "primary-fixed": "#7d9cff",
+              "tertiary-fixed-dim": "#54eed8",
+              "secondary": "#c180ff",
+              "on-secondary-fixed-variant": "#7511c3",
+              "inverse-on-surface": "#4f5565",
+              "surface": "#080e1b",
+              "secondary-fixed-dim": "#dbb4ff",
+              "on-surface-variant": "#a5abbd",
+              "surface-dim": "#080e1b",
+              "tertiary": "#c6fff3",
+              "surface-tint": "#91abff",
+              "surface-container": "#12192a",
+              "on-tertiary-fixed": "#004a41",
+              "error": "#ff716c",
+              "secondary-fixed": "#e5c6ff",
+              "surface-container-high": "#171f31",
+              "inverse-surface": "#faf9ff",
+              "error-container": "#9f0519",
+              "primary-dim": "#3a6bed",
+              "on-secondary": "#33005b",
+              "on-primary-fixed-variant": "#002570",
+              "outline-variant": "#424857",
+              "on-secondary-fixed": "#4f0089",
+              "on-primary-container": "#001d5c",
+              "surface-container-lowest": "#000000",
+              "error-dim": "#d7383b",
+              "surface-container-low": "#0c1322",
+              "surface-variant": "#1d2639",
+              "secondary-dim": "#9c48ea",
+              "on-background": "#e2e8fb",
+              "on-surface": "#e2e8fb",
+              "background": "#080e1b",
+              "tertiary-fixed": "#65fde6",
+              "on-tertiary-fixed-variant": "#00695e",
+              "inverse-primary": "#1854d6",
+              "on-primary-fixed": "#000000",
+              "on-primary": "#002775",
+              "on-error": "#490006",
+              "tertiary-container": "#65fde6",
+              "secondary-container": "#6f00be",
+              "primary-fixed-dim": "#678dff",
+              "tertiary-dim": "#48e5d0",
+              "surface-container-highest": "#1d2639",
+              "on-tertiary-container": "#005e54",
+              "surface-bright": "#222c41",
+              "primary-container": "#7d9cff",
+              "primary": "#91abff",
+              "on-tertiary": "#00685c"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Manrope"],
+              "label": ["Manrope"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      body { font-family: 'Manrope', sans-serif; }
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .glass-effect {
+        backdrop-filter: blur(16px);
+        background: rgba(29, 38, 57, 0.7);
+      }
+    </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen overflow-hidden">
+<!-- Header (Shared Component: TopAppBar) -->
+<header class="bg-[#080e1b] dark:bg-[#080e1b] docked full-width top-0 z-40 bg-[#0c1322] shadow-none flex justify-between items-center w-full px-6 h-16 fixed">
+<div class="flex items-center gap-8">
+<span class="text-2xl font-black text-[#4D7CFE] dark:text-[#91abff] tracking-tighter" style="">Electric Inventory</span>
+<nav class="hidden md:flex gap-6 items-center">
+<a class="font-manrope tracking-tight text-sm text-[#a5abbd] hover:text-[#f8fafc] transition-colors duration-200" href="#" style="">Dashboard</a>
+<a class="font-manrope tracking-tight text-sm text-[#a5abbd] hover:text-[#f8fafc] transition-colors duration-200" href="#" style="">Inventory</a>
+<a class="font-manrope tracking-tight text-sm text-[#91abff] border-b-2 border-[#4D7CFE] pb-1 transition-colors duration-200" href="#" style="">Orders</a>
+<a class="font-manrope tracking-tight text-sm text-[#a5abbd] hover:text-[#f8fafc] transition-colors duration-200" href="#" style="">Suppliers</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-[#a5abbd] hover:bg-[#1d2639] transition-colors duration-200 rounded-lg active:scale-95" style="">
+<span class="material-symbols-outlined" style="">notifications</span>
+</button>
+<button class="p-2 text-[#a5abbd] hover:bg-[#1d2639] transition-colors duration-200 rounded-lg active:scale-95" style="">
+<span class="material-symbols-outlined" style="">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center overflow-hidden border border-outline-variant/20">
+<img alt="User profile" class="" data-alt="professional portrait of a warehouse manager in a modern tech office setting, soft cinematic lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAROSxl7u0MK6Jtw2Q4gH0nAsBQ4OECG7dapwPj6emPhAiG99Hy28YPnigzFwEeTITwNqXj6MhDJokeWTGZMTLOW2Lcsn5z4m9yKaMQeCTuRQG9bJOHH3dXC9TBOrBHvk7Vmva-ByoPArmzuNJaba5oWSNS6aQ5q7vsaz312Ih_2evALaI9n2cwjt0GiuKCNteNi8XbNJ6PAjtmkBOpmQdEwN7g9zihQj4gf-aj0giG1Y9fh0lbIRNOM7G7d_EScm0x_CnGQYtyd5b1" style=""/>
+</div>
+</div>
+</header>
+<!-- Sidebar (Shared Component: SideNavBar) -->
+<aside class="h-screen w-64 left-0 top-0 border-r border-[#424857]/15 bg-[#0c1322] dark:bg-[#0c1322] shadow-xl hidden lg:flex flex-col p-4 space-y-2 pt-20 fixed z-30">
+<div class="px-2 pb-6">
+<div class="flex items-center gap-3 px-2">
+<div class="w-10 h-10 rounded-lg bg-primary-dim flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary" style="">inventory_2</span>
+</div>
+<div>
+<p class="text-xl font-bold text-[#f8fafc] font-manrope" style="">Inventory Pro</p>
+<p class="text-xs text-[#a5abbd] font-manrope" style="">Warehouse Alpha</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2.5 font-manrope text-sm font-medium text-[#a5abbd] hover:bg-[#12192a] hover:text-[#f8fafc] rounded-lg transition-transform duration-200 hover:translate-x-1" href="#" style="">
+<span class="material-symbols-outlined" style="">dashboard</span> Overview
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 font-manrope text-sm font-medium bg-[#1d2639] text-[#91abff] rounded-lg shadow-[0_0_15px_rgba(77,124,254,0.1)] transition-transform duration-200" href="#" style="">
+<span class="material-symbols-outlined" style="">shopping_cart</span> Purchase Orders
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 font-manrope text-sm font-medium text-[#a5abbd] hover:bg-[#12192a] hover:text-[#f8fafc] rounded-lg transition-transform duration-200 hover:translate-x-1" href="#" style="">
+<span class="material-symbols-outlined" style="">inventory_2</span> Stock levels
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 font-manrope text-sm font-medium text-[#a5abbd] hover:bg-[#12192a] hover:text-[#f8fafc] rounded-lg transition-transform duration-200 hover:translate-x-1" href="#" style="">
+<span class="material-symbols-outlined" style="">bar_chart</span> Analytics
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 font-manrope text-sm font-medium text-[#a5abbd] hover:bg-[#12192a] hover:text-[#f8fafc] rounded-lg transition-transform duration-200 hover:translate-x-1" href="#" style="">
+<span class="material-symbols-outlined" style="">history</span> History
+            </a>
+</nav>
+<div class="pt-4 border-t border-[#424857]/15 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2.5 font-manrope text-sm font-medium text-[#a5abbd] hover:bg-[#12192a] hover:text-[#f8fafc] rounded-lg" href="#" style="">
+<span class="material-symbols-outlined" style="">help</span> Help
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 font-manrope text-sm font-medium text-[#ff716c] hover:bg-error-container/10 rounded-lg" href="#" style="">
+<span class="material-symbols-outlined" style="">logout</span> Logout
+            </a>
+</div>
+</aside>
+<!-- Main Content Canvas (Background behind modal) -->
+<main class="ml-0 lg:ml-64 pt-16 min-h-screen p-8 bg-surface">
+<div class="flex justify-between items-end mb-8">
+<div>
+<h1 class="text-3xl font-extrabold tracking-tight text-on-surface mb-2" style="">Gestión de Compras</h1>
+<p class="text-on-surface-variant" style="">Administra y supervisa tus órdenes de adquisición en tiempo real.</p>
+</div>
+<button class="px-6 py-2.5 bg-primary-container text-on-primary-container rounded-md font-semibold flex items-center gap-2 shadow-lg active:scale-95 transition-all" style="">
+<span class="material-symbols-outlined" style="">add</span> Create Order
+            </button>
+</div>
+<!-- Background Bento Grid for depth -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 opacity-40 blur-[2px] pointer-events-none">
+<div class="md:col-span-2 p-6 rounded-lg bg-surface-container border border-outline-variant/10">
+<div class="h-64 flex items-center justify-center text-outline" style="">Simulated Table Content</div>
+</div>
+<div class="p-6 rounded-lg bg-surface-container border border-outline-variant/10">
+<div class="h-64 flex items-center justify-center text-outline" style="">Supplier Metrics</div>
+</div>
+</div>
+</main>
+<!-- MODAL OVERLAY -->
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-surface-container-lowest/80 backdrop-blur-md p-4 lg:p-8">
+<!-- MODAL CONTAINER -->
+<div class="w-full max-w-5xl bg-surface-container-low rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[921px] border border-outline-variant/20">
+<!-- Modal Header -->
+<div class="px-8 py-6 border-b border-outline-variant/15 flex justify-between items-center bg-surface-container-high/30">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-xl bg-secondary-container flex items-center justify-center text-on-secondary-container shadow-[0_0_20px_rgba(193,128,255,0.2)]">
+<span class="material-symbols-outlined" style='font-variation-settings: "FILL" 1;'>shopping_bag</span>
+</div>
+<div>
+<h2 class="text-xl font-bold text-on-surface tracking-tight" style="">Nueva Orden de Compra</h2>
+<p class="text-sm text-on-surface-variant" style="">Complete los detalles para procesar la adquisición.</p>
+</div>
+</div>
+<button class="p-2 hover:bg-surface-variant rounded-full text-on-surface-variant transition-colors" style="">
+<span class="material-symbols-outlined" style="">close</span>
+</button>
+</div>
+<!-- Modal Body (Scrollable) -->
+<div class="flex-1 overflow-y-auto p-8 space-y-8">
+<!-- Section 1: Header Fields -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+<div class="md:col-span-2">
+<label class="block text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-2" style="">Proveedor</label>
+<div class="relative group">
+<select class="w-full bg-surface-container-highest border-none rounded-md text-on-surface py-3 px-4 focus:ring-2 focus:ring-primary appearance-none cursor-pointer">
+<option>Seleccione un proveedor...</option>
+<option>ElectroCorp Solutions</option>
+<option>Volt Supply Co.</option>
+<option>InduGrid Industrial</option>
+</select>
+<span class="material-symbols-outlined absolute right-4 top-3 text-on-surface-variant pointer-events-none group-hover:text-primary transition-colors" style="">expand_more</span>
+</div>
+</div>
+<div>
+<label class="block text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-2" style="">Fecha de Emisión</label>
+<div class="relative">
+<input class="w-full bg-surface-container-highest border-none rounded-md text-on-surface py-3 px-4 focus:ring-2 focus:ring-primary [color-scheme:dark]" type="date"/>
+</div>
+</div>
+<div>
+<label class="block text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-2" style="">Estado</label>
+<div class="relative group">
+<select class="w-full bg-surface-container-highest border-none rounded-md text-on-surface py-3 px-4 focus:ring-2 focus:ring-primary appearance-none cursor-pointer">
+<option selected="">Pendiente</option>
+<option>Recibido</option>
+<option>Cancelado</option>
+</select>
+<span class="material-symbols-outlined absolute right-4 top-3 text-on-surface-variant pointer-events-none" style="">expand_more</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+<div class="md:col-span-1">
+<label class="block text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-2" style="">Nº de Orden</label>
+<input class="w-full bg-surface-container-highest border-none rounded-md text-primary font-bold py-3 px-4 focus:ring-2 focus:ring-primary" type="text" value="PO-2024-089"/>
+</div>
+<div class="md:col-span-3">
+<label class="block text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-2" style="">COMENTARIOS</label>
+<input class="w-full bg-surface-container-highest border-none rounded-md text-on-surface py-3 px-4 focus:ring-2 focus:ring-primary" placeholder="Referencia de proyecto o comentarios adicionales..." type="text"/>
+</div>
+</div>
+<!-- Section 2: Product Table -->
+<div class="space-y-4">
+<div class="flex justify-between items-center gap-4">
+<h3 class="text-sm font-bold uppercase tracking-widest text-primary shrink-0" style="">Partidas de la Orden</h3>
+<div class="flex items-center gap-3 flex-1 justify-end">
+<div class="relative max-w-sm w-full">
+<span class="material-symbols-outlined absolute left-3 top-2 text-on-surface-variant text-sm" style="">search</span>
+<input class="w-full bg-surface-container-highest border-none rounded-md text-on-surface py-1.5 pl-9 pr-4 text-xs focus:ring-1 focus:ring-primary/50" placeholder="Buscar producto por nombre o SKU..." type="text"/>
+</div>
+<button class="text-xs flex items-center gap-1.5 px-4 py-2 bg-surface-variant hover:bg-surface-bright text-primary rounded-md transition-all font-bold whitespace-nowrap shadow-sm" style="">
+<span class="material-symbols-outlined text-sm" style="">add_circle</span> Añadir Producto
+                        </button>
+</div>
+</div>
+<div class="overflow-x-auto rounded-lg border border-outline-variant/10">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-high/50 text-[10px] uppercase tracking-widest text-on-surface-variant">
+<th class="px-4 py-3 font-semibold" style="">Producto / Descripción</th>
+<th class="px-4 py-3 font-semibold w-24" style="">Cant.</th>
+<th class="px-4 py-3 font-semibold w-40" style="">Precio Unit.</th>
+<th class="px-4 py-3 font-semibold w-40" style="">Subtotal</th>
+<th class="px-4 py-3 font-semibold w-12 text-center" style=""></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/5">
+<!-- Line Item 1 -->
+<tr class="group hover:bg-surface-container-highest/30 transition-colors">
+<td class="px-4 py-3" style="">
+<div class="relative group/search">
+<input class="w-full bg-transparent border-none p-0 focus:ring-0 text-sm text-on-surface" type="text" value="Transformador Trifásico 50kVA"/>
+<div class="absolute inset-x-0 -bottom-1 h-px bg-outline-variant/30 group-hover/search:bg-primary transition-all"></div>
+</div>
+</td>
+<td class="px-4 py-3" style="">
+<input class="w-full bg-transparent border-none p-0 focus:ring-0 text-sm text-on-surface text-center" type="number" value="2"/>
+</td>
+<td class="px-4 py-3" style="">
+<div class="flex items-center gap-1">
+<span class="text-on-surface-variant text-xs" style="">S/</span>
+<input class="w-full bg-transparent border-none p-0 focus:ring-0 text-sm text-on-surface" type="text" value="1,250.00"/>
+</div>
+</td>
+<td class="px-4 py-3 text-sm font-bold text-on-surface" style="">
+                                        S/ 2,500.00
+                                    </td>
+<td class="px-4 py-3 text-center" style="">
+<button class="text-on-surface-variant hover:text-error transition-colors" style="">
+<span class="material-symbols-outlined text-lg" style="">delete_sweep</span>
+</button>
+</td>
+</tr>
+<!-- Line Item 2 -->
+<tr class="group hover:bg-surface-container-highest/30 transition-colors">
+<td class="px-4 py-3" style="">
+<div class="relative group/search">
+<input class="w-full bg-transparent border-none p-0 focus:ring-0 text-sm text-on-surface" type="text" value="Cable de Cobre THHN AWG 10"/>
+<div class="absolute inset-x-0 -bottom-1 h-px bg-outline-variant/30 group-hover/search:bg-primary transition-all"></div>
+</div>
+</td>
+<td class="px-4 py-3" style="">
+<input class="w-full bg-transparent border-none p-0 focus:ring-0 text-sm text-on-surface text-center" type="number" value="100"/>
+</td>
+<td class="px-4 py-3" style="">
+<div class="flex items-center gap-1">
+<span class="text-on-surface-variant text-xs" style="">S/</span>
+<input class="w-full bg-transparent border-none p-0 focus:ring-0 text-sm text-on-surface" type="text" value="4.50"/>
+</div>
+</td>
+<td class="px-4 py-3 text-sm font-bold text-on-surface" style="">
+                                        S/ 450.00
+                                    </td>
+<td class="px-4 py-3 text-center" style="">
+<button class="text-on-surface-variant hover:text-error transition-colors" style="">
+<span class="material-symbols-outlined text-lg" style="">delete_sweep</span>
+</button>
+</td>
+</tr>
+<!-- Empty Row for "Add" feel -->
+<tr class="bg-surface-container-highest/10">
+<td class="px-4 py-3 italic text-on-surface-variant/50 text-xs" style="">
+                                        Click para buscar producto...
+                                    </td>
+<td class="px-4 py-3" colspan="4" style=""></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Section 3: Financial Summary -->
+<div class="flex flex-col md:flex-row justify-between items-start gap-8">
+<div class="max-w-xs space-y-4">
+<div class="flex items-center gap-3 p-4 rounded-lg bg-tertiary-container/5 border border-tertiary/10">
+<span class="material-symbols-outlined text-tertiary" style='font-variation-settings: "FILL" 1;'>info</span>
+<p class="text-xs text-on-surface-variant leading-relaxed" style="">
+                                Esta orden se convertirá en stock disponible una vez que el estado cambie a <span class="text-tertiary font-bold" style="">Recibido</span>.
+                            </p>
+</div>
+</div>
+<div class="w-full md:w-80 space-y-3 bg-surface-container-high/40 p-6 rounded-xl border border-outline-variant/10">
+<div class="flex justify-between items-center">
+<span class="text-sm text-on-surface-variant" style="">Subtotal</span>
+<span class="text-sm font-medium text-on-surface" style="">S/ 2,950.00</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-sm text-on-surface-variant" style="">IGV (18%)</span>
+<span class="text-sm font-medium text-on-surface" style="">S/ 531.00</span>
+</div>
+<div class="pt-3 mt-3 border-t border-outline-variant/20 flex justify-between items-center">
+<span class="text-base font-bold text-on-surface" style="">Total General</span>
+<span class="text-xl font-extrabold text-secondary tracking-tight" style="">S/ 3,481.00</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Modal Footer -->
+<div class="px-8 py-6 bg-surface-container-highest/20 border-t border-outline-variant/15 flex flex-col sm:flex-row justify-end gap-4">
+<button class="px-8 py-3 text-sm font-bold text-on-surface-variant hover:text-on-surface transition-colors rounded-md active:scale-95" style="">
+                    Cancelar
+                </button>
+<button class="px-10 py-3 text-sm font-bold bg-primary-container text-on-primary-container hover:shadow-[0_0_20px_rgba(125,156,255,0.4)] transition-all rounded-md active:scale-95 flex items-center justify-center gap-2" style="">
+<span class="material-symbols-outlined text-lg" style="">save</span>
+                    Guardar Orden
+                </button>
+</div>
+</div>
+</div>
+</body></html>

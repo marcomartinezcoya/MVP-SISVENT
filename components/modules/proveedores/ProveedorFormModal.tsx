@@ -139,10 +139,10 @@ export function ProveedorFormModal({
       <div className="relative w-full max-w-lg bg-surface-container-low rounded-2xl shadow-2xl shadow-black/60 border border-outline-variant/20 animate-in fade-in slide-in-from-bottom-4 duration-200 overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-outline-variant/10">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-secondary-container shadow-[0_0_20px_rgba(193,128,255,0.2)] flex items-center justify-center">
               <span
-                className="material-symbols-outlined text-primary"
+                className="material-symbols-outlined text-on-secondary-container"
                 style={{ fontVariationSettings: "'FILL' 1" }}
               >
                 local_shipping

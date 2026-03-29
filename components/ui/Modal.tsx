@@ -6,6 +6,9 @@ interface ModalProps {
   title: string;
   children: React.ReactNode;
   maxWidth?: string;
+  icon?: string;
+  iconBgClass?: string;
+  iconTextClass?: string;
 }
 
 export const Modal: React.FC<ModalProps> = ({ 
@@ -13,7 +16,10 @@ export const Modal: React.FC<ModalProps> = ({
   onClose, 
   title, 
   children,
-  maxWidth = 'max-w-md'
+  maxWidth = 'max-w-md',
+  icon,
+  iconBgClass = 'bg-secondary-container shadow-[0_0_20px_rgba(193,128,255,0.2)]',
+  iconTextClass = 'text-on-secondary-container'
 }) => {
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -44,7 +50,16 @@ export const Modal: React.FC<ModalProps> = ({
         className={`relative w-full ${maxWidth} bg-surface-container border border-outline-variant/10 rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200`}
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-outline-variant/10">
-          <h3 className="text-xl font-bold text-on-surface">{title}</h3>
+          <div className="flex items-center gap-4">
+            {icon && (
+              <div className={`w-12 h-12 rounded-xl ${iconBgClass} flex items-center justify-center`}>
+                <span className={`material-symbols-outlined ${iconTextClass}`} style={{ fontVariationSettings: '"FILL" 1' }}>
+                  {icon}
+                </span>
+              </div>
+            )}
+            <h3 className="text-xl font-bold text-on-surface">{title}</h3>
+          </div>
           <button 
             onClick={onClose}
             className="p-1.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 rounded-lg transition-colors"

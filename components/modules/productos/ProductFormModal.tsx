@@ -243,6 +243,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       onClose={onClose}
       title={isEditMode ? 'Editar Producto' : 'Nuevo Producto'}
       maxWidth="max-w-2xl"
+      icon="inventory_2"
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         
