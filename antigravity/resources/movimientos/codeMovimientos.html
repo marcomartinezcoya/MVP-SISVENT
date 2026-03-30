@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>InventoryFlow - Movimientos</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-primary-fixed": "#000000",
+              "secondary-container": "#6f00be",
+              "tertiary": "#c6fff3",
+              "on-error": "#490006",
+              "surface-container-low": "#0c1322",
+              "surface": "#080e1b",
+              "error-dim": "#d7383b",
+              "secondary": "#c180ff",
+              "on-tertiary": "#00685c",
+              "on-tertiary-fixed-variant": "#00695e",
+              "on-secondary-fixed": "#4f0089",
+              "on-secondary-fixed-variant": "#7511c3",
+              "primary-container": "#7d9cff",
+              "error": "#ff716c",
+              "on-primary-fixed-variant": "#002570",
+              "inverse-surface": "#faf9ff",
+              "on-tertiary-container": "#005e54",
+              "on-surface": "#e2e8fb",
+              "on-secondary-container": "#e9cdff",
+              "tertiary-container": "#65fde6",
+              "primary-fixed-dim": "#678dff",
+              "on-tertiary-fixed": "#004a41",
+              "surface-container": "#12192a",
+              "primary-fixed": "#7d9cff",
+              "on-primary": "#002775",
+              "on-error-container": "#ffa8a3",
+              "primary-dim": "#3a6bed",
+              "secondary-fixed": "#e5c6ff",
+              "tertiary-dim": "#48e5d0",
+              "surface-container-lowest": "#000000",
+              "inverse-primary": "#1854d6",
+              "on-background": "#e2e8fb",
+              "primary": "#91abff",
+              "on-surface-variant": "#a5abbd",
+              "background": "#080e1b",
+              "outline-variant": "#424857",
+              "surface-container-highest": "#1d2639",
+              "secondary-fixed-dim": "#dbb4ff",
+              "surface-dim": "#080e1b",
+              "error-container": "#9f0519",
+              "surface-tint": "#91abff",
+              "tertiary-fixed": "#65fde6",
+              "tertiary-fixed-dim": "#54eed8",
+              "surface-container-high": "#171f31",
+              "on-secondary": "#33005b",
+              "surface-variant": "#1d2639",
+              "on-primary-container": "#001d5c",
+              "secondary-dim": "#9c48ea",
+              "inverse-on-surface": "#4f5565",
+              "outline": "#6f7586",
+              "surface-bright": "#222c41"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Manrope"],
+              "label": ["Manrope"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Manrope', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(29, 38, 57, 0.6);
+            backdrop-filter: blur(16px);
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #080e1b; }
+        ::-webkit-scrollbar-thumb { background: #1d2639; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface antialiased min-h-screen flex">
+<!-- SideNavBar -->
+<aside class="h-screen w-64 fixed left-0 top-0 overflow-y-auto bg-[#0c1322] border-r border-[#424857]/15 flex flex-col p-4 space-y-2 z-50">
+<div class="mb-8 px-4 flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-dim to-primary flex items-center justify-center shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-on-primary-container" style="font-variation-settings: 'FILL' 1;">warehouse</span>
+</div>
+<div>
+<h1 class="text-lg font-extrabold text-[#91abff] tracking-tight leading-none">InventoryFlow</h1>
+<p class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold mt-1">Gestión Empresarial</p>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="group flex items-center gap-3 px-4 py-3 rounded-md transition-all text-[#a5abbd] hover:text-[#f8fafc] hover:bg-[#12192a]" href="#">
+<span class="material-symbols-outlined text-lg">dashboard</span>
+<span class="font-medium text-sm">Dashboard</span>
+</a>
+<a class="group flex items-center gap-3 px-4 py-3 rounded-md transition-all text-[#a5abbd] hover:text-[#f8fafc] hover:bg-[#12192a]" href="#">
+<span class="material-symbols-outlined text-lg">inventory_2</span>
+<span class="font-medium text-sm">Productos</span>
+</a>
+<a class="group flex items-center gap-3 px-4 py-3 rounded-md transition-all text-[#a5abbd] hover:text-[#f8fafc] hover:bg-[#12192a]" href="#">
+<span class="material-symbols-outlined text-lg">local_shipping</span>
+<span class="font-medium text-sm">Proveedores</span>
+</a>
+<a class="group flex items-center gap-3 px-4 py-3 rounded-md transition-all text-[#a5abbd] hover:text-[#f8fafc] hover:bg-[#12192a]" href="#">
+<span class="material-symbols-outlined text-lg">groups</span>
+<span class="font-medium text-sm">Clientes</span>
+</a>
+<a class="group flex items-center gap-3 px-4 py-3 rounded-md transition-all text-[#a5abbd] hover:text-[#f8fafc] hover:bg-[#12192a]" href="#">
+<span class="material-symbols-outlined text-lg">shopping_cart</span>
+<span class="font-medium text-sm">Compras</span>
+</a>
+<a class="group flex items-center gap-3 px-4 py-3 rounded-md transition-all text-[#a5abbd] hover:text-[#f8fafc] hover:bg-[#12192a]" href="#">
+<span class="material-symbols-outlined text-lg">sell</span>
+<span class="font-medium text-sm">Ventas</span>
+</a>
+<a class="group flex items-center gap-3 px-4 py-3 rounded-md transition-all text-[#a5abbd] hover:text-[#f8fafc] hover:bg-[#12192a]" href="#">
+<span class="material-symbols-outlined text-lg">warehouse</span>
+<span class="font-medium text-sm">Inventario</span>
+</a>
+<a class="group flex items-center gap-3 px-4 py-3 rounded-lg transition-all bg-[#1d2639] text-[#91abff] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)]" href="#">
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">swap_horiz</span>
+<span class="font-semibold text-sm">Movimientos</span>
+</a>
+</nav>
+<div class="pt-6 mt-6 border-t border-outline-variant/10 space-y-1">
+<a class="group flex items-center gap-3 px-4 py-3 rounded-md transition-all text-[#a5abbd] hover:text-[#f8fafc] hover:bg-[#12192a]" href="#">
+<span class="material-symbols-outlined text-lg">help</span>
+<span class="font-medium text-sm">Ayuda</span>
+</a>
+<a class="group flex items-center gap-3 px-4 py-3 rounded-md transition-all text-error hover:bg-error-container/10" href="#">
+<span class="material-symbols-outlined text-lg">logout</span>
+<span class="font-medium text-sm">Cerrar sesión</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 ml-64 min-h-screen bg-surface flex flex-col">
+<!-- TopNavBar -->
+<header class="w-full h-16 sticky top-0 z-40 bg-[#0c1322] border-b border-outline-variant/10 flex justify-between items-center px-8">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">search</span>
+<input class="w-full bg-surface-container-highest border-none rounded-md py-2 pl-10 pr-4 text-sm focus:ring-1 focus:ring-primary text-on-surface placeholder:text-on-surface-variant" placeholder="Buscar movimientos por ID o producto..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<button class="relative p-2 text-on-surface-variant hover:bg-surface-variant rounded-full transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-[#0c1322]"></span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-variant rounded-full transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="h-8 w-8 rounded-full overflow-hidden border border-outline-variant/30">
+<img alt="User Profile Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDqZWvYtBkmr81kWDjKYose69AOq0BUlhEZKmihn0IBkbcf9smLRQGVugeAP5fQ3TaRem5aBwpIpor46LgBMKg9dsCuiZ2Hc3_vxwDAqCqCd79O3HWVbIT3FcfUHQWgDhJGU4P_dElD4rC1DwKkSj-lOiRcO5L0Pubgf7SnKfbX3F5aX2kSZMIXVbVpc_tlNwOvzd_5dV_oX7R0Sz_FoTt2bCohNJD5ScDZVE6lLyWedjEawhxM6VNzlMKZ0fA1KycgUu093SZB6ACB"/>
+</div>
+</div>
+</header>
+<!-- Content Canvas -->
+<div class="p-8 space-y-8 max-w-[1400px] mx-auto w-full">
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<h2 class="text-3xl font-bold text-on-surface tracking-tight">Movimientos</h2>
+<p class="text-on-surface-variant mt-1">Registro en tiempo real de entradas, salidas y transferencias internas.</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="bg-gradient-to-br from-primary-dim to-primary text-on-primary-container font-bold px-6 py-2.5 rounded-md flex items-center gap-2 hover:shadow-lg hover:shadow-primary/20 transition-all active:scale-95">
+<span class="material-symbols-outlined text-xl">add</span>
+                        Nueva Entrada
+                    </button>
+</div>
+</div>
+<!-- Bento Stats Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-surface-container-low p-6 rounded-xl border border-outline-variant/5">
+<div class="flex items-center justify-between mb-4">
+<div class="p-2 bg-primary/10 rounded-lg">
+<span class="material-symbols-outlined text-primary">sync_alt</span>
+</div>
+<span class="text-[10px] font-bold text-primary px-2 py-0.5 bg-primary/10 rounded-full">EN VIVO</span>
+</div>
+<p class="text-on-surface-variant text-xs font-semibold uppercase tracking-wider">Total Movimientos</p>
+<h3 class="text-3xl font-bold mt-1 tracking-tight">1,284</h3>
+<p class="text-[10px] text-tertiary-dim mt-2 flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">trending_up</span> +12% desde el mes pasado
+                    </p>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl border border-outline-variant/5">
+<div class="flex items-center justify-between mb-4">
+<div class="p-2 bg-tertiary/10 rounded-lg">
+<span class="material-symbols-outlined text-tertiary">login</span>
+</div>
+<span class="text-xs text-on-surface-variant">Últimas 24h</span>
+</div>
+<p class="text-on-surface-variant text-xs font-semibold uppercase tracking-wider">Entradas</p>
+<h3 class="text-3xl font-bold mt-1 tracking-tight">432</h3>
+<div class="w-full bg-surface-container mt-4 h-1 rounded-full overflow-hidden">
+<div class="bg-tertiary h-full w-[65%]"></div>
+</div>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl border border-outline-variant/5">
+<div class="flex items-center justify-between mb-4">
+<div class="p-2 bg-secondary/10 rounded-lg">
+<span class="material-symbols-outlined text-secondary">logout</span>
+</div>
+<span class="text-xs text-on-surface-variant">Últimas 24h</span>
+</div>
+<p class="text-on-surface-variant text-xs font-semibold uppercase tracking-wider">Salidas</p>
+<h3 class="text-3xl font-bold mt-1 tracking-tight">219</h3>
+<div class="w-full bg-surface-container mt-4 h-1 rounded-full overflow-hidden">
+<div class="bg-secondary h-full w-[35%]"></div>
+</div>
+</div>
+</div>
+<!-- Analysis Section (Moved Chart) -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<div class="lg:col-span-2 glass-panel p-6 rounded-xl border border-primary/10">
+<div class="flex justify-between items-center mb-8">
+<div>
+<h4 class="font-bold text-lg">Intensidad de Movimientos</h4>
+<p class="text-xs text-on-surface-variant">Histórico de actividad mensual</p>
+</div>
+<select class="bg-surface-container border-none text-xs rounded-md focus:ring-1 focus:ring-primary px-3 py-1.5">
+<option>Por Mes</option>
+<option>Por Día</option>
+</select>
+</div>
+<div class="h-48 flex items-end justify-between gap-2 px-2">
+<!-- Monthly Bar Chart -->
+<div class="w-full group relative">
+<div class="bg-primary/20 rounded-t h-[40%] transition-all group-hover:bg-primary/40"></div>
+<span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] text-on-surface-variant uppercase font-bold">Ene</span>
+</div>
+<div class="w-full group relative">
+<div class="bg-primary/20 rounded-t h-[55%] transition-all group-hover:bg-primary/40"></div>
+<span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] text-on-surface-variant uppercase font-bold">Feb</span>
+</div>
+<div class="w-full group relative">
+<div class="bg-primary/20 rounded-t h-[30%] transition-all group-hover:bg-primary/40"></div>
+<span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] text-on-surface-variant uppercase font-bold">Mar</span>
+</div>
+<div class="w-full group relative">
+<div class="bg-primary rounded-t h-[85%] transition-all group-hover:opacity-80">
+<div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-on-surface text-surface text-[10px] font-bold px-2 py-1 rounded hidden group-hover:block whitespace-nowrap shadow-xl">Pico: 1,420 tx</div>
+</div>
+<span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] text-primary uppercase font-bold">Abr</span>
+</div>
+<div class="w-full group relative">
+<div class="bg-primary/20 rounded-t h-[70%] transition-all group-hover:bg-primary/40"></div>
+<span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] text-on-surface-variant uppercase font-bold">May</span>
+</div>
+<div class="w-full group relative">
+<div class="bg-primary/20 rounded-t h-[50%] transition-all group-hover:bg-primary/40"></div>
+<span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] text-on-surface-variant uppercase font-bold">Jun</span>
+</div>
+<div class="w-full group relative">
+<div class="bg-primary/20 rounded-t h-[45%] transition-all group-hover:bg-primary/40"></div>
+<span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] text-on-surface-variant uppercase font-bold">Jul</span>
+</div>
+<div class="w-full group relative">
+<div class="bg-primary/20 rounded-t h-[90%] transition-all group-hover:bg-primary/40"></div>
+<span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] text-on-surface-variant uppercase font-bold">Ago</span>
+</div>
+<div class="w-full group relative">
+<div class="bg-primary/20 rounded-t h-[60%] transition-all group-hover:bg-primary/40"></div>
+<span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] text-on-surface-variant uppercase font-bold">Sep</span>
+</div>
+<div class="w-full group relative">
+<div class="bg-secondary rounded-t h-[45%] transition-all group-hover:opacity-80"></div>
+<span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] text-secondary uppercase font-bold">Oct</span>
+</div>
+<div class="w-full group relative">
+<div class="bg-primary/20 rounded-t h-[35%] transition-all group-hover:bg-primary/40"></div>
+<span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] text-on-surface-variant uppercase font-bold">Nov</span>
+</div>
+<div class="w-full group relative">
+<div class="bg-primary/20 rounded-t h-[65%] transition-all group-hover:bg-primary/40"></div>
+<span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] text-on-surface-variant uppercase font-bold">Dic</span>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl border border-outline-variant/5">
+<h4 class="font-bold text-lg mb-6">Distribución por Tipo</h4>
+<div class="space-y-6">
+<div class="space-y-2">
+<div class="flex justify-between text-sm">
+<span class="text-on-surface-variant">Entradas (Compras)</span>
+<span class="font-bold">65%</span>
+</div>
+<div class="w-full bg-surface-container h-2 rounded-full overflow-hidden">
+<div class="bg-tertiary h-full w-[65%] rounded-full shadow-[0_0_10px_rgba(198,255,243,0.3)]"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-sm">
+<span class="text-on-surface-variant">Salidas (Ventas)</span>
+<span class="font-bold">28%</span>
+</div>
+<div class="w-full bg-surface-container h-2 rounded-full overflow-hidden">
+<div class="bg-secondary h-full w-[28%] rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Filters & Table Section -->
+<div class="space-y-4">
+<div class="flex flex-wrap items-center gap-4">
+<div class="flex items-center gap-2 px-3 py-2 bg-surface-container-high rounded-md border border-outline-variant/10 min-w-[180px]">
+<span class="material-symbols-outlined text-on-surface-variant text-sm">calendar_today</span>
+<span class="text-sm font-medium">Últimos 7 Días</span>
+<span class="material-symbols-outlined text-on-surface-variant text-sm ml-auto cursor-pointer">expand_more</span>
+</div>
+<button class="bg-surface-container-high text-on-surface px-4 py-2 rounded-md flex items-center gap-2 text-sm font-semibold hover:bg-surface-bright transition-all border border-outline-variant/10">
+<span class="material-symbols-outlined text-lg">picture_as_pdf</span>
+                        Exportar PDF
+                    </button>
+<button class="bg-surface-container-high text-on-surface px-4 py-2 rounded-md flex items-center gap-2 text-sm font-semibold hover:bg-surface-bright transition-all border border-outline-variant/10">
+<span class="material-symbols-outlined text-lg">table_chart</span>
+                        Exportar Excel
+                    </button>
+<div class="ml-auto flex items-center gap-4">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">search</span>
+<input class="bg-surface-container-high border border-outline-variant/10 rounded-md py-2 pl-10 pr-4 text-sm focus:ring-1 focus:ring-primary text-on-surface placeholder:text-on-surface-variant w-64" placeholder="Buscar movimientos..." type="text"/>
+</div>
+<button class="p-2 bg-surface-container-high text-on-surface rounded-md hover:bg-surface-bright transition-colors border border-outline-variant/10">
+<span class="material-symbols-outlined">filter_list</span>
+</button>
+</div>
+</div>
+<!-- Movements Table Card -->
+<div class="bg-surface-container-low rounded-xl overflow-hidden border border-outline-variant/5 shadow-sm">
+<div class="p-6 border-b border-outline-variant/5 flex justify-between items-center bg-surface-container-low/50">
+<h4 class="font-bold text-lg">Registro de Actividad Detallado</h4>
+<span class="text-xs text-on-surface-variant font-medium">Mostrando 15 de 1,284 resultados</span>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead>
+<tr class="text-[11px] uppercase tracking-widest text-on-surface-variant font-bold bg-surface-container/30">
+<th class="px-6 py-4">Estado</th>
+<th class="px-6 py-4">ID Transacción</th>
+<th class="px-6 py-4">Nombre Activo</th>
+<th class="px-6 py-4">Origen / Destino</th>
+<th class="px-6 py-4">Cantidad</th>
+<th class="px-6 py-4">Fecha</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/5">
+<!-- Entry 1 -->
+<tr class="hover:bg-surface-container transition-colors group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 bg-tertiary rounded-full shadow-[0_0_8px_rgba(198,255,243,0.6)]"></div>
+<span class="text-xs font-semibold text-tertiary">ENTRADA</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="text-xs font-mono text-on-surface-variant">#TX-94281</span>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-surface-variant flex items-center justify-center">
+<span class="material-symbols-outlined text-lg text-primary">laptop_mac</span>
+</div>
+<span class="text-sm font-semibold">MacBook Pro M2 Max</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-2 text-xs">
+<span class="text-on-surface-variant">Logística Global</span>
+<span class="material-symbols-outlined text-xs text-primary">arrow_forward</span>
+<span class="font-medium text-on-surface">Almacén Principal</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="text-sm font-bold text-on-surface">+12 Unidades</span>
+</td>
+<td class="px-6 py-5">
+<div class="flex flex-col">
+<span class="text-sm font-medium">12 Oct, 2023</span>
+<span class="text-[10px] text-on-surface-variant">14:23 PM</span>
+</div>
+</td>
+</tr>
+<!-- Entry 2 -->
+<tr class="hover:bg-surface-container transition-colors group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 bg-secondary rounded-full shadow-[0_0_8px_rgba(193,128,255,0.6)]"></div>
+<span class="text-xs font-semibold text-secondary">SALIDA</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="text-xs font-mono text-on-surface-variant">#TX-94285</span>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-surface-variant flex items-center justify-center">
+<span class="material-symbols-outlined text-lg text-secondary">router</span>
+</div>
+<span class="text-sm font-semibold">Cisco Catalyst 9300</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-2 text-xs">
+<span class="text-on-surface-variant">Hub Central</span>
+<span class="material-symbols-outlined text-xs text-secondary">arrow_forward</span>
+<span class="font-medium text-on-surface">Digital Corp S.A.</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="text-sm font-bold text-on-surface">-04 Unidades</span>
+</td>
+<td class="px-6 py-5">
+<div class="flex flex-col">
+<span class="text-sm font-medium">12 Oct, 2023</span>
+<span class="text-[10px] text-on-surface-variant">12:10 PM</span>
+</div>
+</td>
+</tr>
+<!-- Entry 3 -->
+<tr class="hover:bg-surface-container transition-colors group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 bg-primary rounded-full shadow-[0_0_8px_rgba(145,171,255,0.6)]"></div>
+<span class="text-xs font-semibold text-primary">TRANSFERENCIA</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="text-xs font-mono text-on-surface-variant">#TX-94289</span>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-surface-variant flex items-center justify-center">
+<span class="material-symbols-outlined text-lg text-tertiary">monitor</span>
+</div>
+<span class="text-sm font-semibold">Dell UltraSharp 32"</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-2 text-xs">
+<span class="text-on-surface-variant">Almacén Zona B</span>
+<span class="material-symbols-outlined text-xs text-primary">swap_horiz</span>
+<span class="font-medium text-on-surface">Sala Tech 4</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="text-sm font-bold text-on-surface">15 Unidades</span>
+</td>
+<td class="px-6 py-5">
+<div class="flex flex-col">
+<span class="text-sm font-medium">11 Oct, 2023</span>
+<span class="text-[10px] text-on-surface-variant">09:45 AM</span>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Styled Pagination matching SCREEN_32 style -->
+<div class="p-6 bg-surface-container-low/50 border-t border-outline-variant/5 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="text-sm text-on-surface-variant">Filas por página:</span>
+<select class="bg-transparent border-none text-sm focus:ring-0 text-on-surface cursor-pointer">
+<option>10</option>
+<option selected="">15</option>
+<option>25</option>
+</select>
+</div>
+<div class="flex items-center gap-6">
+<span class="text-sm text-on-surface-variant">1-15 de 1,284</span>
+<div class="flex items-center gap-1">
+<button class="p-1 hover:bg-surface-variant rounded transition-colors text-on-surface-variant disabled:opacity-30" disabled="">
+<span class="material-symbols-outlined">first_page</span>
+</button>
+<button class="p-1 hover:bg-surface-variant rounded transition-colors text-on-surface-variant disabled:opacity-30" disabled="">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="p-1 hover:bg-surface-variant rounded transition-colors text-on-surface">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+<button class="p-1 hover:bg-surface-variant rounded transition-colors text-on-surface">
+<span class="material-symbols-outlined">last_page</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer Decoration -->
+<footer class="mt-auto p-8 text-center text-on-surface-variant text-[10px] uppercase tracking-[0.2em] font-bold opacity-30">
+            Sistema de Gestión InventoryFlow • Capa de Datos Confidencial • v4.2.0
+        </footer>
+</main>
+</body></html>

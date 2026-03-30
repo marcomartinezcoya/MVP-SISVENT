@@ -1,0 +1,7 @@
+- [x] Crear archivo `lib/types/venta.ts`
+- [x] Implementar mock data en `venta.ts` basado en `codeventas.html`
+- [x] Desarrollar componente de UI modal en `components/modules/ventas/VentaModal.tsx`
+- [x] Conectar lógica de cálculo dentro del modal
+- [x] Construir página principal de `/ventas/page.tsx`
+- [x] Conectar interacciones de filtro, estado y uso del modal
+- [x] Validar responsividad de interfaz

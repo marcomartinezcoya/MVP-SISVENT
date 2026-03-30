@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary-dim": "#3a6bed",
+              "on-error-container": "#ffa8a3",
+              "on-error": "#490006",
+              "tertiary-fixed-dim": "#54eed8",
+              "error-dim": "#d7383b",
+              "on-background": "#e2e8fb",
+              "surface-variant": "#1d2639",
+              "on-surface-variant": "#a5abbd",
+              "on-secondary-fixed-variant": "#7511c3",
+              "on-tertiary": "#00685c",
+              "on-tertiary-fixed": "#004a41",
+              "error": "#ff716c",
+              "surface": "#080e1b",
+              "on-surface": "#e2e8fb",
+              "on-primary-fixed": "#000000",
+              "tertiary-dim": "#48e5d0",
+              "secondary-fixed-dim": "#dbb4ff",
+              "surface-container-highest": "#1d2639",
+              "on-secondary": "#33005b",
+              "on-primary-container": "#001d5c",
+              "outline-variant": "#424857",
+              "tertiary-fixed": "#65fde6",
+              "background": "#080e1b",
+              "inverse-primary": "#1854d6",
+              "secondary-fixed": "#e5c6ff",
+              "on-primary-fixed-variant": "#002570",
+              "primary-fixed": "#7d9cff",
+              "surface-container": "#12192a",
+              "primary-container": "#7d9cff",
+              "outline": "#6f7586",
+              "surface-container-lowest": "#000000",
+              "surface-bright": "#222c41",
+              "surface-container-low": "#0c1322",
+              "on-secondary-container": "#e9cdff",
+              "on-primary": "#002775",
+              "inverse-on-surface": "#4f5565",
+              "inverse-surface": "#faf9ff",
+              "error-container": "#9f0519",
+              "primary": "#91abff",
+              "on-tertiary-fixed-variant": "#00695e",
+              "surface-container-high": "#171f31",
+              "surface-dim": "#080e1b",
+              "on-secondary-fixed": "#4f0089",
+              "secondary": "#c180ff",
+              "primary-fixed-dim": "#678dff",
+              "tertiary-container": "#65fde6",
+              "tertiary": "#c6fff3",
+              "secondary-container": "#6f00be",
+              "surface-tint": "#91abff",
+              "secondary-dim": "#9c48ea",
+              "on-tertiary-container": "#005e54"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Manrope"],
+              "label": ["Manrope"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "1rem", "md": "0.75rem", "xl": "1.25rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      body {
+        font-family: 'Manrope', sans-serif;
+        background-color: #080e1b;
+      }
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .glass-effect {
+        backdrop-filter: blur(16px);
+        background: rgba(29, 38, 57, 0.7);
+      }
+    </style>
+</head>
+<body class="bg-background text-on-surface flex items-center justify-center min-h-screen p-4 md:p-8">
+<!-- Modal Backdrop Overlay -->
+<div class="fixed inset-0 bg-surface-container-lowest/60 backdrop-blur-sm z-0"></div>
+<!-- Main Modal Container -->
+<main class="relative z-10 w-full max-w-2xl bg-surface-container-low rounded-xl shadow-2xl shadow-black/40 overflow-hidden border border-outline-variant/10">
+<!-- Modal Header -->
+<header class="px-8 py-6 bg-surface-container-high flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-3xl" data-icon="warehouse">warehouse</span>
+</div>
+<div>
+<h1 class="text-2xl font-extrabold tracking-tight text-on-surface leading-none">Nueva Entrada</h1>
+<p class="text-on-surface-variant text-sm mt-1">Gestión de Ajustes de Inventario</p>
+</div>
+</div>
+<button class="text-on-surface-variant hover:text-on-surface transition-colors p-2 hover:bg-surface-variant rounded-full">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+</header>
+<!-- Form Content -->
+<form class="p-8 space-y-8">
+<!-- Section: Producto y Referencia -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Product Selection -->
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-primary/80 ml-1">Producto</label>
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg" data-icon="search">search</span>
+<input class="w-full bg-surface-container-highest border-none rounded-md py-3 pl-12 pr-4 text-on-surface placeholder:text-outline focus:ring-2 focus:ring-primary/40 transition-all" placeholder="Buscar producto por nombre o SKU..." type="text"/>
+</div>
+</div>
+<!-- Date Selection -->
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-primary/80 ml-1">Fecha de Registro</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg" data-icon="calendar_today">calendar_today</span>
+<input class="w-full bg-surface-container-highest border-none rounded-md py-3 pl-12 pr-4 text-on-surface focus:ring-2 focus:ring-primary/40 transition-all [color-scheme:dark]" type="date" value="2023-10-27"/>
+</div>
+</div>
+</div>
+<!-- Section: Inventory Logic -->
+<div class="bg-surface-container p-6 rounded-lg border border-outline-variant/10">
+<div class="flex flex-col md:flex-row gap-8 items-start">
+<!-- Quantity Field -->
+<div class="w-full md:w-1/2 space-y-4">
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-primary/80 ml-1">Cantidad de Ajuste</label>
+<div class="flex items-center gap-3">
+<div class="relative flex-grow">
+<input class="w-full bg-surface-container-highest border-none rounded-md py-4 px-6 text-2xl font-bold text-on-surface focus:ring-2 focus:ring-primary/40 transition-all text-center" placeholder="0" step="1" type="number"/>
+</div>
+</div>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-widest font-medium">Use números negativos para pérdidas o daños</p>
+</div>
+</div>
+<!-- Financial Preview / Meta Info -->
+<div class="w-full md:w-1/2 bg-surface-container-low rounded-md p-5 border-l-4 border-secondary space-y-3">
+<div class="flex justify-between items-center">
+<span class="text-xs text-on-surface-variant font-medium">Costo Promedio (Unidad)</span>
+<span class="text-sm font-bold text-on-surface">S/ 45.50</span>
+</div>
+<div class="flex justify-between items-center pt-2 border-t border-outline-variant/20">
+<span class="text-xs text-on-surface-variant font-medium">Valor Total Ajuste</span>
+<span class="text-lg font-extrabold text-secondary">S/ 0.00</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Section: Motivo -->
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-primary/80 ml-1">Motivo / Referencia</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-4 text-on-surface-variant text-lg" data-icon="description">description</span>
+<textarea class="w-full bg-surface-container-highest border-none rounded-md py-3 pl-12 pr-4 text-on-surface placeholder:text-outline focus:ring-2 focus:ring-primary/40 transition-all resize-none" placeholder="Ej: Reposición de stock, Devolución de cliente, Ajuste por inventario físico..." rows="3"></textarea>
+</div>
+</div>
+<!-- Quick Suggestions (Bento Style) -->
+<div class="flex flex-wrap gap-2 pt-2">
+<button class="px-3 py-1.5 bg-surface-variant hover:bg-surface-bright rounded-full text-xs font-medium text-on-surface-variant hover:text-primary transition-all" type="button">Compra de Mercancía</button>
+<button class="px-3 py-1.5 bg-surface-variant hover:bg-surface-bright rounded-full text-xs font-medium text-on-surface-variant hover:text-primary transition-all" type="button">Corrección de Saldo</button>
+<button class="px-3 py-1.5 bg-surface-variant hover:bg-surface-bright rounded-full text-xs font-medium text-on-surface-variant hover:text-error transition-all" type="button">Daño / Mermas</button>
+</div>
+<!-- Form Actions -->
+<footer class="flex flex-col md:flex-row items-center justify-end gap-4 pt-6 border-t border-outline-variant/10">
+<button class="w-full md:w-auto px-8 py-3 rounded-md font-bold text-on-surface-variant hover:bg-surface-variant transition-all" type="button">
+                    Cancelar
+                </button>
+<button class="w-full md:w-auto px-10 py-3 bg-gradient-to-br from-primary-dim to-primary rounded-md font-bold text-on-primary-fixed shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2" type="submit">
+<span class="material-symbols-outlined" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                    Confirmar Entrada
+                </button>
+</footer>
+</form>
+<!-- Decorative Progress Indicator -->
+<div class="absolute bottom-0 left-0 h-1 bg-primary shadow-[0_0_15px_rgba(145,171,255,0.6)]" style="width: 100%;"></div>
+</main>
+<!-- Contextual Status Card (Floating) -->
+</body></html>
