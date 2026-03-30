@@ -11,7 +11,6 @@ const NAV_ITEMS = [
   { href: '/clientes', icon: 'groups', label: 'Clientes' },
   { href: '/compras', icon: 'shopping_cart', label: 'Compras' },
   { href: '/ventas', icon: 'sell', label: 'Ventas' },
-  { href: '/inventario', icon: 'warehouse', label: 'Inventario' },
   { href: '/movimientos', icon: 'compare_arrows', label: 'Movimientos' },
 ];
 
