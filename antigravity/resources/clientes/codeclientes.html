@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>InventoryFlow - Clientes</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-primary-fixed": "#000000",
+              "secondary-container": "#6f00be",
+              "tertiary": "#c6fff3",
+              "on-error": "#490006",
+              "surface-container-low": "#0c1322",
+              "surface": "#080e1b",
+              "error-dim": "#d7383b",
+              "secondary": "#c180ff",
+              "on-tertiary": "#00685c",
+              "on-tertiary-fixed-variant": "#00695e",
+              "on-secondary-fixed": "#4f0089",
+              "on-secondary-fixed-variant": "#7511c3",
+              "primary-container": "#7d9cff",
+              "error": "#ff716c",
+              "on-primary-fixed-variant": "#002570",
+              "inverse-surface": "#faf9ff",
+              "on-tertiary-container": "#005e54",
+              "on-surface": "#e2e8fb",
+              "on-secondary-container": "#e9cdff",
+              "tertiary-container": "#65fde6",
+              "primary-fixed-dim": "#678dff",
+              "on-tertiary-fixed": "#004a41",
+              "surface-container": "#12192a",
+              "primary-fixed": "#7d9cff",
+              "on-primary": "#002775",
+              "on-error-container": "#ffa8a3",
+              "primary-dim": "#3a6bed",
+              "secondary-fixed": "#e5c6ff",
+              "tertiary-dim": "#48e5d0",
+              "surface-container-lowest": "#000000",
+              "inverse-primary": "#1854d6",
+              "on-background": "#e2e8fb",
+              "primary": "#91abff",
+              "on-surface-variant": "#a5abbd",
+              "background": "#080e1b",
+              "outline-variant": "#424857",
+              "surface-container-highest": "#1d2639",
+              "secondary-fixed-dim": "#dbb4ff",
+              "surface-dim": "#080e1b",
+              "error-container": "#9f0519",
+              "surface-tint": "#91abff",
+              "tertiary-fixed": "#65fde6",
+              "tertiary-fixed-dim": "#54eed8",
+              "surface-container-high": "#171f31",
+              "on-secondary": "#33005b",
+              "surface-variant": "#1d2639",
+              "on-primary-container": "#001d5c",
+              "secondary-dim": "#9c48ea",
+              "inverse-on-surface": "#4f5565",
+              "outline": "#6f7586",
+              "surface-bright": "#222c41"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Manrope"],
+              "label": ["Manrope"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      body { font-family: 'Manrope', sans-serif; }
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .glass-card {
+        background: rgba(29, 38, 57, 0.6);
+        backdrop-filter: blur(12px);
+      }
+      ::-webkit-scrollbar { width: 6px; }
+      ::-webkit-scrollbar-track { background: #080e1b; }
+      ::-webkit-scrollbar-thumb { background: #1d2639; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface antialiased">
+<!-- SideNavBar Component -->
+<aside class="h-screen w-64 fixed left-0 top-0 overflow-y-auto bg-surface-container-low border-r border-outline-variant/15 shadow-xl shadow-black/20 flex flex-col p-4 space-y-2 font-manrope text-sm font-medium z-50">
+<div class="flex items-center gap-3 px-4 py-6 mb-4">
+<div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-dim to-primary flex items-center justify-center shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-on-primary" data-icon="inventory_2">inventory_2</span>
+</div>
+<div>
+<h1 class="text-lg font-extrabold text-primary leading-tight">InventoryFlow</h1>
+<p class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Gestión Empresarial</p>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="group flex items-center gap-3 px-4 py-3 rounded-md transition-all text-on-surface-variant hover:text-on-surface hover:bg-surface-variant" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+        Dashboard
+      </a>
+<a class="group flex items-center gap-3 px-4 py-3 rounded-md transition-all text-on-surface-variant hover:text-on-surface hover:bg-surface-variant" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+        Productos
+      </a>
+<a class="group flex items-center gap-3 px-4 py-3 rounded-md transition-all text-on-surface-variant hover:text-on-surface hover:bg-surface-variant" href="#">
+<span class="material-symbols-outlined" data-icon="local_shipping">local_shipping</span>
+        Proveedores
+      </a>
+<!-- ACTIVE TAB: Clientes -->
+<a class="group flex items-center gap-3 px-4 py-3 transition-all bg-surface-variant text-primary rounded-lg shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)] font-semibold" href="#">
+<span class="material-symbols-outlined" data-icon="groups" style="font-variation-settings: 'FILL' 1;">groups</span>
+        Clientes
+      </a>
+<a class="group flex items-center gap-3 px-4 py-3 rounded-md transition-all text-on-surface-variant hover:text-on-surface hover:bg-surface-variant" href="#">
+<span class="material-symbols-outlined" data-icon="shopping_cart">shopping_cart</span>
+        Compras
+      </a>
+<a class="group flex items-center gap-3 px-4 py-3 rounded-md transition-all text-on-surface-variant hover:text-on-surface hover:bg-surface-variant" href="#">
+<span class="material-symbols-outlined" data-icon="sell">sell</span>
+        Ventas
+      </a>
+<a class="group flex items-center gap-3 px-4 py-3 rounded-md transition-all text-on-surface-variant hover:text-on-surface hover:bg-surface-variant" href="#">
+<span class="material-symbols-outlined" data-icon="warehouse">warehouse</span>
+        Inventario
+      </a>
+<a class="group flex items-center gap-3 px-4 py-3 rounded-md transition-all text-on-surface-variant hover:text-on-surface hover:bg-surface-variant" href="#">
+<span class="material-symbols-outlined" data-icon="swap_horiz">swap_horiz</span>
+        Movimientos
+      </a>
+</nav>
+<div class="mt-auto pt-6 border-t border-outline-variant/10 space-y-1">
+<button class="w-full bg-primary-container text-on-primary-container py-3 rounded-xl font-bold flex items-center justify-center gap-2 mb-4 active:scale-95 transition-transform">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+        Nueva Entrada
+      </button>
+<a class="group flex items-center gap-3 px-4 py-3 rounded-md transition-all text-on-surface-variant hover:text-on-surface hover:bg-surface-variant" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+        Ayuda
+      </a>
+<a class="group flex items-center gap-3 px-4 py-3 rounded-md transition-all text-on-surface-variant hover:text-error hover:bg-error-container/10" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+        Cerrar Sesión
+      </a>
+</div>
+</aside>
+<!-- Main Content Wrapper -->
+<main class="ml-64 min-h-screen">
+<!-- TopNavBar Component -->
+<header class="w-full h-16 sticky top-0 z-40 bg-surface/80 backdrop-blur-md flex justify-between items-center px-8 border-none font-manrope text-sm antialiased">
+<div class="flex items-center gap-4 w-1/3">
+<div class="relative w-full max-w-xs">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg" data-icon="search">search</span>
+<input class="w-full bg-surface-container-highest border-none rounded-full py-2 pl-10 pr-4 text-xs focus:ring-1 focus:ring-primary placeholder:text-on-surface-variant/50" placeholder="Buscar clientes..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-3">
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+</div>
+<div class="h-8 w-[1px] bg-outline-variant/20"></div>
+<div class="flex items-center gap-3 cursor-pointer group">
+<div class="text-right">
+<p class="text-xs font-bold leading-none">Alex Sterling</p>
+<p class="text-[10px] text-on-surface-variant font-medium">Administrador</p>
+</div>
+<img alt="Avatar de perfil de usuario" class="w-10 h-10 rounded-full border border-primary/20 group-hover:border-primary transition-colors" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-nCPabffzYpdiXR4xjH2OUBw2gyyNgnHMz3t3ciDfZ6VKpbJEC9MYxXb1EMqJHioIM4LIpis5WLPJPok22YYIcT7_VOoAln8lo_8f7-s0zmmDZqaaXwgYBjZVXftndsMro6tGYKLpoIFrzlaFfvx5qnD08F12A1IZkrCrhQgnIOrxbP2r4LHvG1yfR2Ydtq2kbzXdzAf0EsSSgslYGifTtrm0O6JZObQFnXfqCmyWEwC833jv1aS9X8-_M4Kbvksxp3ak6swUPImp"/>
+</div>
+</div>
+</header>
+<!-- Content Canvas -->
+<div class="p-8 space-y-8">
+<!-- Page Header & Stats Bento -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+<div class="md:col-span-2 space-y-2">
+<h2 class="text-3xl font-extrabold tracking-tight text-on-surface">Clientes</h2>
+<p class="text-on-surface-variant max-w-md">Administra las relaciones con tus clientes, analiza el valor de vida y realiza el seguimiento de comportamientos de compra por segmento.</p>
+</div>
+<div class="bg-surface-container rounded-xl p-5 border border-outline-variant/5 flex flex-col justify-between overflow-hidden relative group">
+<div class="absolute -right-4 -top-4 w-24 h-24 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-all"></div>
+<span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Clientes Activos</span>
+<div class="mt-2 flex items-baseline gap-2">
+<span class="text-3xl font-extrabold text-primary">1,284</span>
+<span class="text-xs font-medium text-tertiary flex items-center"><span class="material-symbols-outlined text-sm" data-icon="arrow_upward">arrow_upward</span> 12%</span>
+</div>
+</div>
+<div class="bg-surface-container rounded-xl p-5 border border-outline-variant/5 flex flex-col justify-between overflow-hidden relative group">
+<div class="absolute -right-4 -top-4 w-24 h-24 bg-secondary/5 rounded-full blur-2xl group-hover:bg-secondary/10 transition-all"></div>
+<span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Valor de Vida Promedio (LTV)</span>
+<div class="mt-2 flex items-baseline gap-2">
+<span class="text-3xl font-extrabold text-secondary">$2,450</span>
+<span class="text-xs font-medium text-tertiary flex items-center"><span class="material-symbols-outlined text-sm" data-icon="arrow_upward">arrow_upward</span> 5.4%</span>
+</div>
+</div>
+</div>
+<!-- Filters & Actions -->
+<div class="flex flex-wrap items-center justify-between gap-4">
+<div class="flex items-center gap-2 p-1.5 bg-surface-container-low rounded-xl border border-outline-variant/5">
+<button class="px-5 py-2 rounded-lg text-xs font-bold transition-all bg-surface-container-highest text-primary shadow-sm">Todos</button>
+<button class="px-5 py-2 rounded-lg text-xs font-bold transition-all text-on-surface-variant hover:text-on-surface">VIP</button>
+<button class="px-5 py-2 rounded-lg text-xs font-bold transition-all text-on-surface-variant hover:text-on-surface">Regular</button>
+<button class="px-5 py-2 rounded-lg text-xs font-bold transition-all text-on-surface-variant hover:text-on-surface">Nuevo</button>
+</div>
+<div class="flex items-center gap-3">
+<button class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface-container border border-outline-variant/10 text-xs font-bold text-on-surface hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-lg" data-icon="filter_list">filter_list</span>
+            Filtros Avanzados
+          </button>
+<button class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-on-primary-fixed text-xs font-bold shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-lg" data-icon="person_add">person_add</span>
+            Añadir Cliente
+          </button>
+</div>
+</div>
+<!-- Customer Bento Grid List -->
+<div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+<!-- Customer Card 1: VIP -->
+<div class="bg-surface-container rounded-2xl p-6 border border-outline-variant/5 hover:border-primary/20 transition-all group">
+<div class="flex justify-between items-start mb-6">
+<div class="flex gap-4">
+<img alt="Retrato de cliente masculino" class="w-14 h-14 rounded-2xl object-cover ring-2 ring-primary/20" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBRjjsjBoy783HD1XMsX48IzqPipceWJB5QprUQTKHC8EFXVGJ87HxkQKXmGTtpT8HkEkCTpV9vgg_q3qkez12uOFtnAqAQdZswM2hqb7L5qc3YuzW6baw9V4_Sdf1-OdjHvIwChIUiliVmCZEeeB_fMruSmN2JnB5z6piiXQUkkffSOazZrgck06gDdKfO3OoTciclk8_eqRnCQ_3WKysi9vXbn7gdoE0zlVKJVB_59TdBiPaOtbxpAhxnet5MRx6WKVmH_cUVYorr"/>
+<div>
+<h3 class="font-bold text-lg text-on-surface group-hover:text-primary transition-colors">Marcus Chen</h3>
+<p class="text-xs text-on-surface-variant">Global Logistics Inc.</p>
+</div>
+</div>
+<span class="px-3 py-1 rounded-full text-[10px] font-black uppercase bg-primary-container/20 text-primary border border-primary/20">VIP</span>
+</div>
+<div class="grid grid-cols-2 gap-4 mb-6">
+<div class="bg-surface-container-low p-3 rounded-xl border border-outline-variant/5">
+<p class="text-[10px] text-on-surface-variant uppercase font-bold tracking-tighter">Pedidos Totales</p>
+<p class="text-xl font-bold text-on-surface">142</p>
+</div>
+<div class="bg-surface-container-low p-3 rounded-xl border border-outline-variant/5">
+<p class="text-[10px] text-on-surface-variant uppercase font-bold tracking-tighter">Valor de Vida</p>
+<p class="text-xl font-bold text-tertiary">$12,840</p>
+</div>
+</div>
+<div class="flex items-center justify-between text-xs border-t border-outline-variant/10 pt-4">
+<div class="flex items-center gap-2 text-on-surface-variant font-medium">
+<span class="material-symbols-outlined text-sm" data-icon="calendar_today">calendar_today</span>
+              Última compra: 12 oct 2023
+            </div>
+<button class="w-8 h-8 rounded-lg bg-surface-variant flex items-center justify-center text-on-surface hover:bg-primary hover:text-on-primary transition-all">
+<span class="material-symbols-outlined text-lg" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- Customer Card 2: Regular -->
+<div class="bg-surface-container rounded-2xl p-6 border border-outline-variant/5 hover:border-secondary/20 transition-all group">
+<div class="flex justify-between items-start mb-6">
+<div class="flex gap-4">
+<img alt="Retrato de cliente femenino" class="w-14 h-14 rounded-2xl object-cover ring-2 ring-secondary/20" src="https://lh3.googleusercontent.com/aida-public/AB6AXuARJD74FBSQ3x_nljbUTTHHHpZF6eq8qI_lZz5UJ82mwgEZuhOTtcSFiMfsJmaEipyquiVUTeFhSRpu6D2ZPmzJL2saKqVKtHTa82dIZlmL_Pn08pSIwJYcbWWWlJZ1553ISThX-2mmVqMT1Mto8ll8jkhOteivWCn9-RJETkjwTwphmGZXUjudhd7HzLXnDLt29hqisHVqGd9vMNy4S0HF3339Hzk8XgFTrJqsfh9SzxzFE7y-0FLTvKGpisRhOtbIe6xhonmyydHb"/>
+<div>
+<h3 class="font-bold text-lg text-on-surface group-hover:text-secondary transition-colors">Sarah Jenkins</h3>
+<p class="text-xs text-on-surface-variant">Boutique Retailers Co.</p>
+</div>
+</div>
+<span class="px-3 py-1 rounded-full text-[10px] font-black uppercase bg-secondary-container/10 text-secondary border border-secondary/20">Regular</span>
+</div>
+<div class="grid grid-cols-2 gap-4 mb-6">
+<div class="bg-surface-container-low p-3 rounded-xl border border-outline-variant/5">
+<p class="text-[10px] text-on-surface-variant uppercase font-bold tracking-tighter">Pedidos Totales</p>
+<p class="text-xl font-bold text-on-surface">28</p>
+</div>
+<div class="bg-surface-container-low p-3 rounded-xl border border-outline-variant/5">
+<p class="text-[10px] text-on-surface-variant uppercase font-bold tracking-tighter">Valor de Vida</p>
+<p class="text-xl font-bold text-tertiary">$3,210</p>
+</div>
+</div>
+<div class="flex items-center justify-between text-xs border-t border-outline-variant/10 pt-4">
+<div class="flex items-center gap-2 text-on-surface-variant font-medium">
+<span class="material-symbols-outlined text-sm" data-icon="calendar_today">calendar_today</span>
+              Última compra: 05 oct 2023
+            </div>
+<button class="w-8 h-8 rounded-lg bg-surface-variant flex items-center justify-center text-on-surface hover:bg-secondary hover:text-on-secondary transition-all">
+<span class="material-symbols-outlined text-lg" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- Customer Card 3: New -->
+<div class="bg-surface-container rounded-2xl p-6 border border-outline-variant/5 hover:border-tertiary/20 transition-all group">
+<div class="flex justify-between items-start mb-6">
+<div class="flex gap-4">
+<div class="w-14 h-14 rounded-2xl bg-tertiary/10 flex items-center justify-center text-tertiary font-black text-xl border border-tertiary/20 ring-2 ring-tertiary/5">
+                JD
+              </div>
+<div>
+<h3 class="font-bold text-lg text-on-surface group-hover:text-tertiary transition-colors">John Dorsey</h3>
+<p class="text-xs text-on-surface-variant">Consultor Freelance</p>
+</div>
+</div>
+<span class="px-3 py-1 rounded-full text-[10px] font-black uppercase bg-tertiary-container/10 text-tertiary border border-tertiary/20">Nuevo</span>
+</div>
+<div class="grid grid-cols-2 gap-4 mb-6">
+<div class="bg-surface-container-low p-3 rounded-xl border border-outline-variant/5">
+<p class="text-[10px] text-on-surface-variant uppercase font-bold tracking-tighter">Pedidos Totales</p>
+<p class="text-xl font-bold text-on-surface">1</p>
+</div>
+<div class="bg-surface-container-low p-3 rounded-xl border border-outline-variant/5">
+<p class="text-[10px] text-on-surface-variant uppercase font-bold tracking-tighter">Valor de Vida</p>
+<p class="text-xl font-bold text-tertiary">$450</p>
+</div>
+</div>
+<div class="flex items-center justify-between text-xs border-t border-outline-variant/10 pt-4">
+<div class="flex items-center gap-2 text-on-surface-variant font-medium">
+<span class="material-symbols-outlined text-sm" data-icon="calendar_today">calendar_today</span>
+              Última compra: Ayer
+            </div>
+<button class="w-8 h-8 rounded-lg bg-surface-variant flex items-center justify-center text-on-surface hover:bg-tertiary hover:text-on-tertiary transition-all">
+<span class="material-symbols-outlined text-lg" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- Customer Card 4: VIP -->
+<div class="bg-surface-container rounded-2xl p-6 border border-outline-variant/5 hover:border-primary/20 transition-all group">
+<div class="flex justify-between items-start mb-6">
+<div class="flex gap-4">
+<img alt="Retrato de cliente femenino 2" class="w-14 h-14 rounded-2xl object-cover ring-2 ring-primary/20" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQyAHS1xZCvyz5XQLt_G5555O1vxgA-Ivg15s0YQ4JoLCzh0zKo0wAyngb6hJJOi852RYLRj-WmWniyWxsV7bpeTiFbAapGnP39ZCLg_itHZfcFbWhoyDySboUCTpr4tqCAjgzkWFldS7P3o-9vjngKqQDIjBGIIz0tnOnQRXcskxiU6aOOHrJ0gRspkKEWgfPt-pnU10XKmeVqm1pMEEmpeRdDDkwkBYxA1gpkB-uvC2GsKhFLm4VLJ7wf2VotweCq5TUMKwxyZmT"/>
+<div>
+<h3 class="font-bold text-lg text-on-surface group-hover:text-primary transition-colors">Elena Rodriguez</h3>
+<p class="text-xs text-on-surface-variant">Techno Systems Ltd</p>
+</div>
+</div>
+<span class="px-3 py-1 rounded-full text-[10px] font-black uppercase bg-primary-container/20 text-primary border border-primary/20">VIP</span>
+</div>
+<div class="grid grid-cols-2 gap-4 mb-6">
+<div class="bg-surface-container-low p-3 rounded-xl border border-outline-variant/5">
+<p class="text-[10px] text-on-surface-variant uppercase font-bold tracking-tighter">Pedidos Totales</p>
+<p class="text-xl font-bold text-on-surface">89</p>
+</div>
+<div class="bg-surface-container-low p-3 rounded-xl border border-outline-variant/5">
+<p class="text-[10px] text-on-surface-variant uppercase font-bold tracking-tighter">Valor de Vida</p>
+<p class="text-xl font-bold text-tertiary">$9,520</p>
+</div>
+</div>
+<div class="flex items-center justify-between text-xs border-t border-outline-variant/10 pt-4">
+<div class="flex items-center gap-2 text-on-surface-variant font-medium">
+<span class="material-symbols-outlined text-sm" data-icon="calendar_today">calendar_today</span>
+              Última compra: 11 oct 2023
+            </div>
+<button class="w-8 h-8 rounded-lg bg-surface-variant flex items-center justify-center text-on-surface hover:bg-primary hover:text-on-primary transition-all">
+<span class="material-symbols-outlined text-lg" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- Customer Card 5: Regular -->
+<div class="bg-surface-container rounded-2xl p-6 border border-outline-variant/5 hover:border-secondary/20 transition-all group">
+<div class="flex justify-between items-start mb-6">
+<div class="flex gap-4">
+<div class="w-14 h-14 rounded-2xl bg-secondary/10 flex items-center justify-center text-secondary font-black text-xl border border-secondary/20 ring-2 ring-secondary/5">
+                SM
+              </div>
+<div>
+<h3 class="font-bold text-lg text-on-surface group-hover:text-secondary transition-colors">Samuel Moore</h3>
+<p class="text-xs text-on-surface-variant">Quick Shipments NV</p>
+</div>
+</div>
+<span class="px-3 py-1 rounded-full text-[10px] font-black uppercase bg-secondary-container/10 text-secondary border border-secondary/20">Regular</span>
+</div>
+<div class="grid grid-cols-2 gap-4 mb-6">
+<div class="bg-surface-container-low p-3 rounded-xl border border-outline-variant/5">
+<p class="text-[10px] text-on-surface-variant uppercase font-bold tracking-tighter">Pedidos Totales</p>
+<p class="text-xl font-bold text-on-surface">45</p>
+</div>
+<div class="bg-surface-container-low p-3 rounded-xl border border-outline-variant/5">
+<p class="text-[10px] text-on-surface-variant uppercase font-bold tracking-tighter">Valor de Vida</p>
+<p class="text-xl font-bold text-tertiary">$5,400</p>
+</div>
+</div>
+<div class="flex items-center justify-between text-xs border-t border-outline-variant/10 pt-4">
+<div class="flex items-center gap-2 text-on-surface-variant font-medium">
+<span class="material-symbols-outlined text-sm" data-icon="calendar_today">calendar_today</span>
+              Última compra: 28 sep 2023
+            </div>
+<button class="w-8 h-8 rounded-lg bg-surface-variant flex items-center justify-center text-on-surface hover:bg-secondary hover:text-on-secondary transition-all">
+<span class="material-symbols-outlined text-lg" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- Quick Insight Bento Piece -->
+<div class="bg-gradient-to-br from-surface-container to-surface-container-high rounded-2xl p-6 border border-outline-variant/10 flex flex-col items-center justify-center text-center relative overflow-hidden group">
+<div class="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<span class="material-symbols-outlined text-5xl text-primary/40 mb-4" data-icon="insights">insights</span>
+<h4 class="font-bold text-lg mb-2">Predicción de Fuga</h4>
+<p class="text-xs text-on-surface-variant px-4">Según las tendencias actuales, se espera que tu tasa de retención crezca un <span class="text-tertiary font-bold">8%</span> el próximo mes.</p>
+<button class="mt-6 text-xs font-black uppercase tracking-widest text-primary border-b border-primary/20 pb-1 hover:border-primary transition-all">Ver reporte</button>
+</div>
+</div>
+<!-- Pagination / Load More -->
+<div class="flex flex-col items-center gap-4 py-8">
+<p class="text-xs text-on-surface-variant font-medium">Mostrando 6 de 1,284 clientes</p>
+<button class="glass-card px-8 py-3 rounded-xl border border-outline-variant/10 text-xs font-extrabold text-on-surface hover:bg-surface-container-highest transition-all active:scale-95">
+          Cargar Más Clientes
+        </button>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-surface-container-low border-t border-outline-variant/10 flex items-center justify-around px-4 z-50">
+<button class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-xl" data-icon="dashboard">dashboard</span>
+<span class="text-[10px] font-bold">Dash</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-xl" data-icon="inventory_2">inventory_2</span>
+<span class="text-[10px] font-bold">Prod.</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-primary">
+<span class="material-symbols-outlined text-xl" data-icon="groups" style="font-variation-settings: 'FILL' 1;">groups</span>
+<span class="text-[10px] font-bold">Clientes</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-xl" data-icon="sell">sell</span>
+<span class="text-[10px] font-bold">Ventas</span>
+</button>
+</nav>
+</body></html>

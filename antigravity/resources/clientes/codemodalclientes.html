@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Añadir Cliente - Electric Slate</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-container-highest": "#1d2639",
+              "tertiary-dim": "#48e5d0",
+              "surface-container-high": "#171f31",
+              "on-tertiary-fixed-variant": "#00695e",
+              "on-tertiary": "#00685c",
+              "on-secondary": "#33005b",
+              "secondary-fixed": "#e5c6ff",
+              "on-primary-fixed-variant": "#002570",
+              "on-tertiary-fixed": "#004a41",
+              "surface-container-lowest": "#000000",
+              "on-surface": "#e2e8fb",
+              "tertiary-fixed-dim": "#54eed8",
+              "background": "#080e1b",
+              "on-secondary-container": "#e9cdff",
+              "error-dim": "#d7383b",
+              "surface-tint": "#91abff",
+              "surface": "#080e1b",
+              "primary-dim": "#3a6bed",
+              "secondary-fixed-dim": "#dbb4ff",
+              "inverse-on-surface": "#4f5565",
+              "surface-bright": "#222c41",
+              "on-primary-container": "#001d5c",
+              "surface-variant": "#1d2639",
+              "primary": "#91abff",
+              "on-background": "#e2e8fb",
+              "secondary-dim": "#9c48ea",
+              "primary-fixed": "#7d9cff",
+              "on-secondary-fixed-variant": "#7511c3",
+              "tertiary-container": "#65fde6",
+              "inverse-primary": "#1854d6",
+              "tertiary-fixed": "#65fde6",
+              "primary-fixed-dim": "#678dff",
+              "outline-variant": "#424857",
+              "surface-container-low": "#0c1322",
+              "on-tertiary-container": "#005e54",
+              "on-surface-variant": "#a5abbd",
+              "inverse-surface": "#faf9ff",
+              "error": "#ff716c",
+              "on-error": "#490006",
+              "surface-dim": "#080e1b",
+              "surface-container": "#12192a",
+              "on-secondary-fixed": "#4f0089",
+              "tertiary": "#c6fff3",
+              "on-primary-fixed": "#000000",
+              "secondary": "#c180ff",
+              "primary-container": "#7d9cff",
+              "on-error-container": "#ffa8a3",
+              "secondary-container": "#6f00be",
+              "on-primary": "#002775",
+              "outline": "#6f7586",
+              "error-container": "#9f0519"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Manrope"],
+              "label": ["Manrope"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Manrope', sans-serif;
+            background-color: #080e1b;
+        }
+        .glass-panel {
+            background: rgba(29, 38, 57, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(66, 72, 87, 0.15);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #424857;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4 overflow-hidden">
+<!-- Background Decoration -->
+<div class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+<div class="absolute -top-24 -left-24 w-96 h-96 bg-primary/10 rounded-full blur-[120px]"></div>
+<div class="absolute -bottom-24 -right-24 w-96 h-96 bg-secondary/10 rounded-full blur-[120px]"></div>
+</div>
+<!-- Modal Container -->
+<main class="relative z-10 w-full max-w-2xl transform transition-all">
+<div class="glass-panel rounded-[1.5rem] shadow-2xl shadow-black/40 overflow-hidden flex flex-col max-h-[921px]">
+<!-- Modal Header -->
+<header class="px-8 py-6 flex items-center justify-between bg-surface-container-low/50">
+<div>
+<h1 class="text-2xl font-extrabold tracking-tight text-on-surface">Añadir Cliente</h1>
+<p class="text-sm text-on-surface-variant mt-1">Ingresa los datos para registrar un nuevo perfil comercial en Electric Slate.</p>
+</div>
+<button class="p-2 rounded-full hover:bg-white/5 text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined">close</span>
+</button>
+</header>
+<!-- Modal Content / Form -->
+<form class="flex-1 overflow-y-auto custom-scrollbar p-8 space-y-8">
+<!-- Avatar Upload Section -->
+<section class="flex flex-col md:flex-row items-center gap-8 bg-surface-container/50 p-6 rounded-xl border border-outline-variant/10">
+<div class="relative group">
+<div class="w-24 h-24 rounded-full bg-surface-container-highest flex items-center justify-center border-2 border-dashed border-outline-variant group-hover:border-primary transition-colors overflow-hidden">
+<img alt="Placeholder" class="w-full h-full object-cover opacity-50" data-alt="minimalist dark theme user profile avatar placeholder with abstract human silhouette and slate color scheme" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAvyrLRGUj8GIGwItB4ZSmX9b2TS4rWYUjmIsei6UzRGqoBxxcqM8R1qqcih1SIuOX8zxNGjyNgIQYrGK3H_q_3XHDJPMG8pWZJ3vGY_nod_ggdABeDqgdleO3AM1ACl5VEWRS0GNCmQqLDLzh4IiOFxbTyfxHeAyuQOs06_PMBHqON-L-eDEqZt83B61XCxk-Y8w04_q56DZlhxXecT_tza3qY9sN1inEbl0bn5lXI_yMvtLvIZOC0U95rxwaz5O2azthm1c400q5l"/>
+</div>
+<div class="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity cursor-pointer">
+<span class="material-symbols-outlined text-white">photo_camera</span>
+</div>
+</div>
+<div class="flex-1 text-center md:text-left">
+<h3 class="font-bold text-on-surface text-lg">Subir Foto de Perfil</h3>
+<p class="text-sm text-on-surface-variant mb-4">Formatos sugeridos: JPG, PNG o WebP. Máximo 2MB.</p>
+<div class="flex flex-wrap justify-center md:justify-start gap-3">
+<button class="px-4 py-2 bg-surface-container-highest text-primary text-sm font-semibold rounded-md hover:bg-surface-bright transition-all border border-outline-variant/20" type="button">
+                                Seleccionar archivo
+                            </button>
+<button class="px-4 py-2 text-on-surface-variant text-sm font-medium hover:text-error-dim transition-colors" type="button">
+                                Eliminar
+                            </button>
+</div>
+</div>
+</section>
+<!-- Information Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
+<!-- Nombre Completo -->
+<div class="space-y-2">
+<label class="block text-xs font-bold uppercase tracking-widest text-on-surface-variant ml-1">Nombre Completo</label>
+<input class="w-full bg-surface-container-highest border-none focus:ring-2 focus:ring-primary/40 rounded-md py-3 px-4 text-on-surface placeholder:text-outline text-sm transition-all" placeholder="Ej. Juan Pérez" type="text"/>
+</div>
+<!-- Empresa -->
+<div class="space-y-2">
+<label class="block text-xs font-bold uppercase tracking-widest text-on-surface-variant ml-1">Empresa <span class="text-outline text-[10px] normal-case font-medium">(Opcional)</span></label>
+<input class="w-full bg-surface-container-highest border-none focus:ring-2 focus:ring-primary/40 rounded-md py-3 px-4 text-on-surface placeholder:text-outline text-sm transition-all" placeholder="Nombre de la compañía" type="text"/>
+</div>
+<!-- Email -->
+<div class="space-y-2">
+<label class="block text-xs font-bold uppercase tracking-widest text-on-surface-variant ml-1">Correo Electrónico</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline text-lg">mail</span>
+<input class="w-full bg-surface-container-highest border-none focus:ring-2 focus:ring-primary/40 rounded-md py-3 pl-12 pr-4 text-on-surface placeholder:text-outline text-sm transition-all" placeholder="email@ejemplo.com" type="email"/>
+</div>
+</div>
+<!-- Teléfono -->
+<div class="space-y-2">
+<label class="block text-xs font-bold uppercase tracking-widest text-on-surface-variant ml-1">Teléfono</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline text-lg">call</span>
+<input class="w-full bg-surface-container-highest border-none focus:ring-2 focus:ring-primary/40 rounded-md py-3 pl-12 pr-4 text-on-surface placeholder:text-outline text-sm transition-all" placeholder="+52 (55) 0000 0000" type="tel"/>
+</div>
+</div>
+<!-- Dirección (Full Width) -->
+<div class="space-y-2 md:col-span-2">
+<label class="block text-xs font-bold uppercase tracking-widest text-on-surface-variant ml-1">Dirección</label>
+<input class="w-full bg-surface-container-highest border-none focus:ring-2 focus:ring-primary/40 rounded-md py-3 px-4 text-on-surface placeholder:text-outline text-sm transition-all" placeholder="Calle, número y colonia" type="text"/>
+</div>
+<!-- Ciudad -->
+<div class="space-y-2">
+<label class="block text-xs font-bold uppercase tracking-widest text-on-surface-variant ml-1">Ciudad</label>
+<input class="w-full bg-surface-container-highest border-none focus:ring-2 focus:ring-primary/40 rounded-md py-3 px-4 text-on-surface placeholder:text-outline text-sm transition-all" placeholder="Ej. Monterrey" type="text"/>
+</div>
+<!-- País -->
+<div class="space-y-2">
+<label class="block text-xs font-bold uppercase tracking-widest text-on-surface-variant ml-1">País</label>
+<div class="relative">
+<select class="w-full bg-surface-container-highest border-none focus:ring-2 focus:ring-primary/40 rounded-md py-3 px-4 text-on-surface appearance-none text-sm transition-all">
+<option value="mx">México</option>
+<option value="es">España</option>
+<option value="ar">Argentina</option>
+<option value="co">Colombia</option>
+<option value="us">Estados Unidos</option>
+</select>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-outline pointer-events-none">expand_more</span>
+</div>
+</div>
+</div>
+</form>
+<!-- Modal Footer -->
+<footer class="px-8 py-6 bg-surface-container-low/80 flex items-center justify-end gap-4 border-t border-outline-variant/10">
+<button class="px-6 py-2.5 text-sm font-bold text-on-surface-variant hover:text-on-surface transition-colors rounded-md" type="button">
+                    Cancelar
+                </button>
+<button class="relative group overflow-hidden px-8 py-2.5 bg-primary-container text-on-primary-container rounded-md font-bold text-sm shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all hover:-translate-y-0.5 active:scale-95" type="submit">
+<span class="relative z-10 flex items-center gap-2">
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">save</span>
+                        Guardar Cliente
+                    </span>
+<div class="absolute inset-0 bg-gradient-to-r from-primary-dim to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+</button>
+</footer>
+</div>
+</main>
+</body></html>
