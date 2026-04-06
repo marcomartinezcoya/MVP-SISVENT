@@ -6,6 +6,8 @@ import { VentaModal } from '@/components/modules/ventas/VentaModal';
 
 export default function VentasPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<'create' | 'edit' | 'view'>('create');
+  const [selectedVenta, setSelectedVenta] = useState<VentaDB | null>(null);
   const [ventas] = useState<VentaDB[]>(MOCK_VENTAS);
   
   const [searchInput, setSearchInput] = useState('');
@@ -22,7 +24,24 @@ export default function VentasPage() {
   });
   const displayedTotal = filteredVentas.length;
 
-  const handleOpenNew = () => setIsModalOpen(true);
+  const handleOpenNew = () => {
+    setModalMode('create');
+    setSelectedVenta(null);
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEdit = (venta: VentaDB) => {
+    setModalMode('edit');
+    setSelectedVenta(venta);
+    setIsModalOpen(true);
+  };
+
+  const handleOpenView = (venta: VentaDB) => {
+    setModalMode('view');
+    setSelectedVenta(venta);
+    setIsModalOpen(true);
+  };
+
   const handleClose = () => setIsModalOpen(false);
 
   return (
@@ -217,6 +236,7 @@ export default function VentasPage() {
                           <button 
                             className="p-2 hover:bg-surface-variant rounded-lg text-on-surface-variant transition-colors"
                             title="Ver detalles"
+                            onClick={() => handleOpenView(venta)}
                           >
                             <span className="material-symbols-outlined text-xl">visibility</span>
                           </button>
@@ -229,6 +249,7 @@ export default function VentasPage() {
                           <button 
                             className="p-2 hover:bg-primary/10 hover:text-primary rounded-lg text-on-surface-variant transition-colors"
                             title="Editar"
+                            onClick={() => handleOpenEdit(venta)}
                           >
                             <span className="material-symbols-outlined text-xl">edit</span>
                           </button>
@@ -271,6 +292,8 @@ export default function VentasPage() {
       <VentaModal 
         isOpen={isModalOpen}
         onClose={handleClose}
+        mode={modalMode}
+        venta={selectedVenta}
       />
     </div>
   );

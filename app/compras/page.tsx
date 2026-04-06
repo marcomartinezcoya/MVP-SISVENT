@@ -6,6 +6,8 @@ import { CompraModal } from '@/components/modules/compras/CompraModal';
 
 export default function ComprasPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<'create' | 'edit' | 'view'>('create');
+  const [selectedCompra, setSelectedCompra] = useState<CompraDB | null>(null);
   const [compras] = useState<CompraDB[]>(MOCK_COMPRAS);
   
   const [searchInput, setSearchInput] = useState('');
@@ -25,6 +27,20 @@ export default function ComprasPage() {
   const displayedTotal = filteredCompras.length;
 
   const handleOpenNew = () => {
+    setModalMode('create');
+    setSelectedCompra(null);
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEdit = (compra: CompraDB) => {
+    setModalMode('edit');
+    setSelectedCompra(compra);
+    setIsModalOpen(true);
+  };
+
+  const handleOpenView = (compra: CompraDB) => {
+    setModalMode('view');
+    setSelectedCompra(compra);
     setIsModalOpen(true);
   };
 
@@ -225,6 +241,7 @@ export default function ComprasPage() {
                           <button 
                             className="p-2 hover:bg-surface-variant rounded-lg text-on-surface-variant transition-colors"
                             title="Ver detalles"
+                            onClick={() => handleOpenView(compra)}
                           >
                             <span className="material-symbols-outlined text-xl">visibility</span>
                           </button>
@@ -237,6 +254,7 @@ export default function ComprasPage() {
                           <button 
                             className="p-2 hover:bg-primary/10 hover:text-primary rounded-lg text-on-surface-variant transition-colors"
                             title="Editar"
+                            onClick={() => handleOpenEdit(compra)}
                           >
                             <span className="material-symbols-outlined text-xl">edit</span>
                           </button>
@@ -275,6 +293,8 @@ export default function ComprasPage() {
       <CompraModal 
         isOpen={isModalOpen}
         onClose={handleClose}
+        mode={modalMode}
+        compra={selectedCompra}
       />
     </div>
   );

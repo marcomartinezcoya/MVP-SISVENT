@@ -355,15 +355,39 @@ export function DashboardModule() {
         </section>
 
         {/* Recent Activity Table */}
-        <section className="overflow-hidden rounded-xl border border-outline-variant/10 bg-surface-container-low shadow-2xl shadow-black/40">
-          <div className="p-8 flex items-center justify-between border-b border-outline-variant/10 bg-surface-container-high/20">
+        <div className="flex flex-col md:flex-row gap-4 items-center justify-between mb-4 mt-8">
+          <div className="flex flex-col">
             <h3 className="text-xl font-bold text-on-surface">
               Actividad Reciente
             </h3>
-            <button className="text-sm font-bold text-primary hover:underline">
+          </div>
+          <div className="flex items-center gap-4">
+            <button className="text-sm font-bold text-primary hover:underline hidden md:block">
               Descargar Reporte
             </button>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-on-surface-variant font-medium">
+                Mostrar 1-4 de 24
+              </span>
+              <div className="flex gap-1">
+                <button
+                  disabled={true}
+                  className="p-1.5 bg-surface-container-highest rounded-md text-on-surface-variant hover:text-on-surface transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <span className="material-symbols-outlined text-lg">chevron_left</span>
+                </button>
+                <button
+                  disabled={false}
+                  className="p-1.5 bg-surface-container-highest rounded-md text-on-surface-variant hover:text-on-surface transition-colors hover:bg-surface-variant/50 cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-lg">chevron_right</span>
+                </button>
+              </div>
+            </div>
           </div>
+        </div>
+
+        <section className="overflow-hidden rounded-xl border border-outline-variant/10 bg-surface-container-low shadow-2xl shadow-black/40">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse min-w-[800px]">
               <thead>
@@ -538,6 +562,19 @@ export function DashboardModule() {
                 </tr>
               </tbody>
             </table>
+          </div>
+          
+          {/* Footer Info */}
+          <div className="px-6 py-4 bg-surface-container-high/30 flex items-center justify-between border-t border-outline-variant/10">
+            <div className="flex gap-4">
+              <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-primary/40"></span>
+                <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Actividad</span>
+              </div>
+            </div>
+            <div className="text-xs text-on-surface-variant italic">
+              24 actividades registradas
+            </div>
           </div>
         </section>
       </div>

@@ -82,6 +82,9 @@ export default function ClientesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null);
 
+  const [page, setPage] = useState(1);
+  const LIMIT = 6;
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -104,6 +107,15 @@ export default function ClientesPage() {
       c.empresa.toLowerCase().includes(s)
     );
   }, [clientes, search]);
+
+  const clientesPaginados = useMemo(() => {
+    const start = (page - 1) * LIMIT;
+    return clientesFiltrados.slice(start, start + LIMIT);
+  }, [clientesFiltrados, page]);
+
+  const totalPages = Math.ceil(clientesFiltrados.length / LIMIT);
+  const fromItem = clientesFiltrados.length === 0 ? 0 : (page - 1) * LIMIT + 1;
+  const toItem = Math.min(page * LIMIT, clientesFiltrados.length);
 
   const handleOpenNewCliente = () => {
     setSelectedCliente(null);
@@ -183,7 +195,7 @@ export default function ClientesPage() {
               placeholder="Buscar por nombre o empresa..."
               type="text"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             />
           </div>
         </div>
@@ -201,7 +213,7 @@ export default function ClientesPage() {
       {/* Customer Bento Grid List */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         
-        {clientesFiltrados.map((cliente) => (
+        {clientesPaginados.map((cliente) => (
           <div 
             key={cliente.id}
             className={`rounded-xl p-6 bg-surface-container-low border border-outline-variant/10 shadow-xl shadow-black/20 transition-all group ${
@@ -289,15 +301,28 @@ export default function ClientesPage() {
         </div>
       )}
 
-      {/* Pagination / Load More */}
+      {/* Pagination Container */}
       {clientesFiltrados.length > 0 && (
-        <div className="flex flex-col items-center gap-4 py-8">
-          <p className="text-xs text-on-surface-variant font-medium">
-            Mostrando {clientesFiltrados.length} clientes
-          </p>
-          <button className="bg-surface-container/60 backdrop-blur-md px-8 py-3 rounded-xl border border-outline-variant/10 text-xs font-extrabold text-on-surface hover:bg-surface-container-highest transition-all active:scale-95">
-            Cargar Más Clientes
-          </button>
+        <div className="flex items-center justify-between py-4 px-2">
+          <span className="text-xs text-on-surface-variant font-medium">
+            Mostrar {fromItem}-{toItem} de {clientesFiltrados.length}
+          </span>
+          <div className="flex gap-1">
+            <button
+              disabled={page <= 1}
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              className="p-1.5 bg-surface-container-highest rounded-md text-on-surface-variant hover:text-on-surface transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <span className="material-symbols-outlined text-lg">chevron_left</span>
+            </button>
+            <button
+              disabled={page >= totalPages}
+              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              className="p-1.5 bg-surface-container-highest rounded-md text-on-surface-variant hover:text-on-surface transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <span className="material-symbols-outlined text-lg">chevron_right</span>
+            </button>
+          </div>
         </div>
       )}
 

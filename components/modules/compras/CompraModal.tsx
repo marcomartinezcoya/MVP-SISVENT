@@ -15,11 +15,15 @@ interface CompraModalProps {
   onClose: () => void;
   // onSave would pass the created/edited object back to page.tsx
   onSave?: (data: any) => void;
+  mode?: 'create' | 'edit' | 'view';
+  compra?: any;
 }
 
-export function CompraModal({ isOpen, onClose, onSave }: CompraModalProps) {
+export function CompraModal({ isOpen, onClose, onSave, mode = 'create', compra }: CompraModalProps) {
   // Use a minimal unique id generator for items
   const generateId = () => Math.random().toString(36).substring(2, 9);
+  
+  const isView = mode === 'view';
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -77,8 +81,12 @@ export function CompraModal({ isOpen, onClose, onSave }: CompraModalProps) {
               <span className="material-symbols-outlined" style={{ fontVariationSettings: '"FILL" 1' }}>shopping_bag</span>
             </div>
             <div>
-              <h2 className="text-xl font-bold text-on-surface tracking-tight">Nueva Orden de Compra</h2>
-              <p className="text-sm text-on-surface-variant">Complete los detalles para procesar la adquisición.</p>
+              <h2 className="text-xl font-bold text-on-surface tracking-tight">
+                {mode === 'create' ? 'Nueva Orden de Compra' : mode === 'edit' ? 'Editar Orden de Compra' : 'Detalle de Orden de Compra'}
+              </h2>
+              <p className="text-sm text-on-surface-variant">
+                {isView ? 'Visualizando los detalles de la adquisición.' : 'Complete los detalles para procesar la adquisición.'}
+              </p>
             </div>
           </div>
           <button 
@@ -99,13 +107,16 @@ export function CompraModal({ isOpen, onClose, onSave }: CompraModalProps) {
                 Proveedor <span className="text-error">*</span>
               </label>
               <div className="relative group">
-                <select className="w-full bg-surface-container-highest border-none rounded-md text-on-surface py-3 px-4 focus:ring-2 focus:ring-primary appearance-none cursor-pointer outline-none">
+                <select 
+                  className="w-full bg-surface-container-highest border-none rounded-md text-on-surface py-3 px-4 focus:ring-2 focus:ring-primary appearance-none cursor-pointer outline-none disabled:opacity-70"
+                  disabled={isView}
+                >
                   <option value="">Seleccione un proveedor...</option>
                   {MOCK_PROVEEDORES.map((prov) => (
                     <option key={prov.id} value={prov.id}>{prov.nombre}</option>
                   ))}
                 </select>
-                <span className="material-symbols-outlined absolute right-4 top-3 text-on-surface-variant pointer-events-none group-hover:text-primary transition-colors">expand_more</span>
+                {!isView && <span className="material-symbols-outlined absolute right-4 top-3 text-on-surface-variant pointer-events-none group-hover:text-primary transition-colors">expand_more</span>}
               </div>
             </div>
             
@@ -116,9 +127,10 @@ export function CompraModal({ isOpen, onClose, onSave }: CompraModalProps) {
               <div className="relative">
                 <input 
                   type="date" 
-                  className="w-full bg-surface-container-highest border-none rounded-md text-on-surface py-3 px-4 focus:ring-2 focus:ring-primary outline-none" 
+                  className="w-full bg-surface-container-highest border-none rounded-md text-on-surface py-3 px-4 focus:ring-2 focus:ring-primary outline-none disabled:opacity-70" 
                   style={{ colorScheme: 'dark' }} 
                   defaultValue={new Date().toISOString().split('T')[0]} 
+                  disabled={isView}
                 />
               </div>
             </div>
@@ -128,12 +140,15 @@ export function CompraModal({ isOpen, onClose, onSave }: CompraModalProps) {
                 Estado <span className="text-error">*</span>
               </label>
               <div className="relative group">
-                <select className="w-full bg-surface-container-highest border-none rounded-md text-on-surface py-3 px-4 focus:ring-2 focus:ring-primary appearance-none cursor-pointer outline-none">
+                <select 
+                  className="w-full bg-surface-container-highest border-none rounded-md text-on-surface py-3 px-4 focus:ring-2 focus:ring-primary appearance-none cursor-pointer outline-none disabled:opacity-70"
+                  disabled={isView}
+                >
                   <option value="Pendiente">Pendiente</option>
                   <option value="Recibido">Recibido</option>
                   <option value="Cancelado">Cancelado</option>
                 </select>
-                <span className="material-symbols-outlined absolute right-4 top-3 text-on-surface-variant pointer-events-none">expand_more</span>
+                {!isView && <span className="material-symbols-outlined absolute right-4 top-3 text-on-surface-variant pointer-events-none">expand_more</span>}
               </div>
             </div>
           </div>
@@ -153,8 +168,9 @@ export function CompraModal({ isOpen, onClose, onSave }: CompraModalProps) {
               <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-2">COMENTARIOS</label>
               <input 
                 type="text" 
-                className="w-full bg-surface-container-highest border-none rounded-md text-on-surface py-3 px-4 focus:ring-2 focus:ring-primary outline-none" 
+                className="w-full bg-surface-container-highest border-none rounded-md text-on-surface py-3 px-4 focus:ring-2 focus:ring-primary outline-none disabled:opacity-70" 
                 placeholder="Referencia de proyecto o comentarios adicionales..." 
+                disabled={isView}
               />
             </div>
           </div>
@@ -172,12 +188,14 @@ export function CompraModal({ isOpen, onClose, onSave }: CompraModalProps) {
                     placeholder="Buscar producto..." 
                   />
                 </div>
-                <button 
-                  onClick={handleAddItem}
-                  className="text-xs flex items-center gap-1.5 px-4 py-2 bg-surface-variant hover:bg-surface-bright text-primary rounded-md transition-all font-bold whitespace-nowrap shadow-sm"
-                >
-                  <span className="material-symbols-outlined text-sm">add_circle</span> Añadir Producto
-                </button>
+                {isView ? null : (
+                  <button 
+                    onClick={handleAddItem}
+                    className="text-xs flex items-center gap-1.5 px-4 py-2 bg-surface-variant hover:bg-surface-bright text-primary rounded-md transition-all font-bold whitespace-nowrap shadow-sm"
+                  >
+                    <span className="material-symbols-outlined text-sm">add_circle</span> Añadir Producto
+                  </button>
+                )}
               </div>
             </div>
             
@@ -189,7 +207,7 @@ export function CompraModal({ isOpen, onClose, onSave }: CompraModalProps) {
                     <th className="px-4 py-3 font-semibold w-24">Cant.</th>
                     <th className="px-4 py-3 font-semibold w-40">Precio Unit.</th>
                     <th className="px-4 py-3 font-semibold w-40">Subtotal</th>
-                    <th className="px-4 py-3 font-semibold w-12 text-center"></th>
+                    {!isView && <th className="px-4 py-3 font-semibold w-12 text-center"></th>}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-outline-variant/5">
@@ -199,21 +217,23 @@ export function CompraModal({ isOpen, onClose, onSave }: CompraModalProps) {
                         <div className="relative group/search">
                           <input 
                             type="text" 
-                            className="w-full bg-transparent border-none p-0 focus:ring-0 text-sm text-on-surface outline-none" 
+                            className="w-full bg-transparent border-none p-0 focus:ring-0 text-sm text-on-surface outline-none disabled:opacity-70" 
                             value={item.productoNombre}
                             onChange={(e) => handleUpdateItem(item.id, 'productoNombre', e.target.value)}
                             placeholder="Nombre del producto..."
+                            disabled={isView}
                           />
-                          <div className="absolute inset-x-0 -bottom-1 h-px bg-outline-variant/30 group-hover/search:bg-primary transition-all"></div>
+                          {!isView && <div className="absolute inset-x-0 -bottom-1 h-px bg-outline-variant/30 group-hover/search:bg-primary transition-all"></div>}
                         </div>
                       </td>
                       <td className="px-4 py-3">
                         <input 
                           type="number" 
                           min="1"
-                          className="w-full bg-transparent border-none p-0 focus:ring-0 text-sm text-on-surface text-center outline-none" 
+                          className="w-full bg-transparent border-none p-0 focus:ring-0 text-sm text-on-surface text-center outline-none disabled:opacity-70" 
                           value={item.cantidad || ''}
                           onChange={(e) => handleUpdateItem(item.id, 'cantidad', parseFloat(e.target.value) || 0)}
+                          disabled={isView}
                         />
                       </td>
                       <td className="px-4 py-3">
@@ -222,31 +242,36 @@ export function CompraModal({ isOpen, onClose, onSave }: CompraModalProps) {
                           <input 
                             type="number" 
                             step="0.01"
-                            className="w-full bg-transparent border-none p-0 focus:ring-0 text-sm text-on-surface outline-none" 
+                            className="w-full bg-transparent border-none p-0 focus:ring-0 text-sm text-on-surface outline-none disabled:opacity-70" 
                             value={item.precioUnitario || ''}
                             onChange={(e) => handleUpdateItem(item.id, 'precioUnitario', parseFloat(e.target.value) || 0)}
+                            disabled={isView}
                           />
                         </div>
                       </td>
                       <td className="px-4 py-3 text-sm font-bold text-on-surface">
                         S/ {(item.cantidad * item.precioUnitario).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </td>
-                      <td className="px-4 py-3 text-center">
-                        <button 
-                          onClick={() => handeRemoveItem(item.id)}
-                          className="text-on-surface-variant hover:text-error transition-colors"
-                        >
-                          <span className="material-symbols-outlined text-lg">delete_sweep</span>
-                        </button>
-                      </td>
+                      {!isView && (
+                        <td className="px-4 py-3 text-center">
+                          <button 
+                            onClick={() => handeRemoveItem(item.id)}
+                            className="text-on-surface-variant hover:text-error transition-colors"
+                          >
+                            <span className="material-symbols-outlined text-lg">delete_sweep</span>
+                          </button>
+                        </td>
+                      )}
                     </tr>
                   ))}
-                  <tr className="bg-surface-container-highest/10">
-                    <td className="px-4 py-3 italic text-on-surface-variant/50 text-xs">
-                      Click en 'Añadir Producto' para agregar más filas...
-                    </td>
-                    <td className="px-4 py-3" colSpan={4}></td>
-                  </tr>
+                  {!isView && (
+                    <tr className="bg-surface-container-highest/10">
+                      <td className="px-4 py-3 italic text-on-surface-variant/50 text-xs">
+                        Click en 'Añadir Producto' para agregar más filas...
+                      </td>
+                      <td className="px-4 py-3" colSpan={4}></td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -295,18 +320,20 @@ export function CompraModal({ isOpen, onClose, onSave }: CompraModalProps) {
             onClick={onClose}
             className="px-8 py-3 text-sm font-bold text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 transition-colors rounded-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Cancelar
+            {isView ? 'Cerrar' : 'Cancelar'}
           </button>
-          <button 
-            onClick={handleSaveWrapper}
-            disabled={isSubmitting}
-            className="px-10 py-3 text-sm font-bold bg-gradient-to-br from-primary-dim to-primary text-on-primary-container hover:shadow-[0_0_20px_rgba(125,156,255,0.4)] transition-all rounded-md active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:shadow-none"
-          >
-            <span className={`material-symbols-outlined text-lg ${isSubmitting ? 'animate-spin' : ''}`}>
-              {isSubmitting ? 'progress_activity' : 'save'}
-            </span>
-            {isSubmitting ? 'Guardando...' : 'Guardar Orden'}
-          </button>
+          {!isView && (
+            <button 
+              onClick={handleSaveWrapper}
+              disabled={isSubmitting}
+              className="px-10 py-3 text-sm font-bold bg-gradient-to-br from-primary-dim to-primary text-on-primary-container hover:shadow-[0_0_20px_rgba(125,156,255,0.4)] transition-all rounded-md active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:shadow-none"
+            >
+              <span className={`material-symbols-outlined text-lg ${isSubmitting ? 'animate-spin' : ''}`}>
+                {isSubmitting ? 'progress_activity' : 'save'}
+              </span>
+              {isSubmitting ? 'Guardando...' : (mode === 'edit' ? 'Guardar Cambios' : 'Guardar Orden')}
+            </button>
+          )}
         </div>
 
       </div>

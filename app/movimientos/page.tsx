@@ -56,10 +56,10 @@ export default function MovimientosPage() {
       {/* Bento Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Total Movimientos */}
-        <div className="bg-surface-container-low p-6 rounded-xl border border-outline-variant/5">
+        <div className="p-6 rounded-xl bg-surface-container-low flex flex-col gap-4 relative overflow-hidden group">
           <div className="flex items-center justify-between mb-4">
-            <div className="p-2 bg-primary/10 rounded-lg">
-              <span className="material-symbols-outlined text-primary">sync_alt</span>
+            <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
+              <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>sync_alt</span>
             </div>
             <span className="text-[10px] font-bold text-primary px-2 py-0.5 bg-primary/10 rounded-full">EN VIVO</span>
           </div>
@@ -71,10 +71,10 @@ export default function MovimientosPage() {
         </div>
 
         {/* Entradas */}
-        <div className="bg-surface-container-low p-6 rounded-xl border border-outline-variant/5">
+        <div className="p-6 rounded-xl bg-surface-container-low flex flex-col gap-4 relative overflow-hidden group">
           <div className="flex items-center justify-between mb-4">
-            <div className="p-2 bg-tertiary/10 rounded-lg">
-              <span className="material-symbols-outlined text-tertiary">login</span>
+            <div className="p-2 bg-tertiary/10 rounded-lg group-hover:bg-tertiary/20 transition-colors">
+              <span className="material-symbols-outlined text-tertiary" style={{ fontVariationSettings: "'FILL' 1" }}>login</span>
             </div>
             <span className="text-xs text-on-surface-variant">Últimas 24h</span>
           </div>
@@ -86,10 +86,10 @@ export default function MovimientosPage() {
         </div>
 
         {/* Salidas */}
-        <div className="bg-surface-container-low p-6 rounded-xl border border-outline-variant/5">
+        <div className="p-6 rounded-xl bg-surface-container-low flex flex-col gap-4 relative overflow-hidden group">
           <div className="flex items-center justify-between mb-4">
-            <div className="p-2 bg-secondary/10 rounded-lg">
-              <span className="material-symbols-outlined text-secondary">logout</span>
+            <div className="p-2 bg-secondary/10 rounded-lg group-hover:bg-secondary/20 transition-colors">
+              <span className="material-symbols-outlined text-secondary" style={{ fontVariationSettings: "'FILL' 1" }}>logout</span>
             </div>
             <span className="text-xs text-on-surface-variant">Últimas 24h</span>
           </div>
@@ -103,7 +103,7 @@ export default function MovimientosPage() {
 
       {/* Analysis Section */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-2 glass-panel p-6 rounded-xl border border-primary/10">
+        <div className="md:col-span-2 glass-panel p-6 rounded-xl">
           <div className="flex justify-between items-center mb-8">
             <div>
               <h4 className="font-bold text-lg text-on-surface">Intensidad de Movimientos</h4>
@@ -137,7 +137,7 @@ export default function MovimientosPage() {
           </div>
         </div>
 
-        <div className="bg-surface-container-low p-6 rounded-xl border border-outline-variant/5">
+        <div className="bg-surface-container-low p-6 rounded-xl flex flex-col gap-4 relative overflow-hidden group">
           <h4 className="font-bold text-lg text-on-surface mb-6">Distribución por Tipo</h4>
           <div className="space-y-6">
             <div className="space-y-2">
@@ -195,34 +195,50 @@ export default function MovimientosPage() {
             <div className="relative">
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">search</span>
               <input 
-                className="bg-surface-container border border-outline-variant/10 rounded-md py-2 pl-10 pr-4 text-sm focus:ring-1 focus:ring-primary text-on-surface placeholder:text-on-surface-variant w-64 outline-none" 
+                className="w-full bg-surface-container border-outline-variant/20 rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-primary/40 focus:border-primary text-on-surface transition-all outline-none" 
                 placeholder="Buscar movimientos..." 
                 type="text"
               />
             </div>
-            <button className="p-2 bg-surface-container text-on-surface rounded-md hover:bg-surface-variant/50 transition-colors border border-outline-variant/10">
-              <span className="material-symbols-outlined">filter_list</span>
-            </button>
           </div>
         </div>
 
-        {/* Movements Table Card */}
-        <div className="bg-surface-container-low rounded-xl overflow-hidden border border-outline-variant/10 shadow-sm">
-          <div className="p-6 border-b border-outline-variant/10 flex justify-between items-center bg-surface-container-low/50">
-            <h4 className="font-bold text-lg text-on-surface">Registro de Actividad Detallado</h4>
-            <span className="text-xs text-on-surface-variant font-medium">Mostrando 5 de 1,284 resultados</span>
-          </div>
+        <div className="flex flex-col md:flex-row gap-4 items-center justify-between mb-4">
+          <h4 className="font-bold text-lg text-on-surface">Registro de Actividad Detallado</h4>
           
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-on-surface-variant font-medium">
+              Mostrar 1-5 de 1,284
+            </span>
+            <div className="flex gap-1">
+              <button
+                disabled={true}
+                className="p-1.5 bg-surface-container-highest rounded-md text-on-surface-variant hover:text-on-surface transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <span className="material-symbols-outlined text-lg">chevron_left</span>
+              </button>
+              <button
+                disabled={false}
+                className="p-1.5 bg-surface-container-highest rounded-md text-on-surface-variant hover:text-on-surface transition-colors hover:bg-surface-variant/50 cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-lg">chevron_right</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Enhanced Data Table */}
+        <div className="overflow-hidden rounded-xl border border-outline-variant/10 bg-surface-container-low shadow-2xl shadow-black/40">
           <div className="overflow-x-auto">
-            <table className="w-full text-left min-w-[900px]">
+            <table className="w-full text-left border-collapse min-w-[900px]">
               <thead>
-                <tr className="text-[11px] uppercase tracking-widest text-on-surface-variant font-bold bg-surface-container/30">
-                  <th className="px-6 py-4">Estado</th>
-                  <th className="px-6 py-4">ID Transacción</th>
-                  <th className="px-6 py-4">Nombre Activo</th>
-                  <th className="px-6 py-4">Origen / Destino</th>
-                  <th className="px-6 py-4">Cantidad</th>
-                  <th className="px-6 py-4">Fecha</th>
+                <tr className="bg-surface-container-high/50 border-b border-outline-variant/10">
+                  <th className="px-6 py-4 text-xs font-bold text-on-surface-variant uppercase tracking-wider">Estado</th>
+                  <th className="px-6 py-4 text-xs font-bold text-on-surface-variant uppercase tracking-wider">ID Transacción</th>
+                  <th className="px-6 py-4 text-xs font-bold text-on-surface-variant uppercase tracking-wider">Nombre Activo</th>
+                  <th className="px-6 py-4 text-xs font-bold text-on-surface-variant uppercase tracking-wider">Origen / Destino</th>
+                  <th className="px-6 py-4 text-xs font-bold text-on-surface-variant uppercase tracking-wider">Cantidad</th>
+                  <th className="px-6 py-4 text-xs font-bold text-on-surface-variant uppercase tracking-wider">Fecha</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant/5">
@@ -275,33 +291,24 @@ export default function MovimientosPage() {
             </table>
           </div>
 
-          {/* Pagination Match */}
-          <div className="p-6 bg-surface-container-low/50 border-t border-outline-variant/10 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-on-surface-variant">Filas por página:</span>
-              <select defaultValue="15" className="bg-transparent border-none text-sm focus:ring-0 text-on-surface cursor-pointer outline-none font-medium">
-                <option value="10">10</option>
-                <option value="15">15</option>
-                <option value="25">25</option>
-              </select>
-            </div>
-            
-            <div className="flex items-center gap-6">
-              <span className="text-sm text-on-surface-variant">1-5 de 1,284</span>
-              <div className="flex items-center gap-1">
-                <button className="p-1 hover:bg-surface-variant rounded transition-colors text-on-surface-variant disabled:opacity-30 disabled:cursor-not-allowed" disabled>
-                  <span className="material-symbols-outlined">first_page</span>
-                </button>
-                <button className="p-1 hover:bg-surface-variant rounded transition-colors text-on-surface-variant disabled:opacity-30 disabled:cursor-not-allowed" disabled>
-                  <span className="material-symbols-outlined">chevron_left</span>
-                </button>
-                <button className="p-1 hover:bg-surface-container rounded transition-colors text-on-surface hover:text-primary">
-                  <span className="material-symbols-outlined">chevron_right</span>
-                </button>
-                <button className="p-1 hover:bg-surface-container rounded transition-colors text-on-surface hover:text-primary">
-                  <span className="material-symbols-outlined">last_page</span>
-                </button>
+          {/* Footer Info */}
+          <div className="px-6 py-4 bg-surface-container-high/30 flex items-center justify-between border-t border-outline-variant/10">
+            <div className="flex gap-4">
+              <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-tertiary"></span>
+                <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Entrada</span>
               </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-secondary"></span>
+                <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Salida</span>
+              </div>
+               <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-primary"></span>
+                <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Transferencia</span>
+              </div>
+            </div>
+            <div className="text-xs text-on-surface-variant italic">
+              1,284 movimientos registrados
             </div>
           </div>
         </div>
