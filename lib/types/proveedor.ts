@@ -56,6 +56,7 @@ export const CATEGORIA_STYLES: Record<string, CategoryStyle> = {
   Hardware:        { bg: 'bg-primary/10',   text: 'text-primary',   avatarText: 'text-primary' },
   Embalaje:        { bg: 'bg-tertiary/10',  text: 'text-tertiary',  avatarText: 'text-tertiary' },
   Oficina:         { bg: 'bg-secondary/10', text: 'text-secondary', avatarText: 'text-secondary' },
+  Electricidad:    { bg: 'bg-tertiary/10',  text: 'text-tertiary',  avatarText: 'text-tertiary' },
   // fallback for any future categories
   _default:        { bg: 'bg-outline/10',   text: 'text-on-surface-variant', avatarText: 'text-on-surface-variant' },
 };

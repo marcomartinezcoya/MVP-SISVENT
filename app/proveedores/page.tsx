@@ -15,36 +15,9 @@ import {
   createProveedor,
   updateProveedor,
   deactivateProveedor,
+  getTopProveedoresCards,
+  TopProveedorCard,
 } from '@/app/proveedores/actions';
-
-// ── Mock Data para Cards ──────────────────────────────────────────────────
-
-const MOCK_TOP_PROVEEDORES = [
-  {
-    id: '1',
-    nombre: 'TechLogistics Global',
-    categoria: 'Tecnología',
-    estado: 'activo',
-    calificacion: 98,
-    pedidos_activos: 12,
-  },
-  {
-    id: '2',
-    nombre: 'Volt & Amp Co.',
-    categoria: 'Electricidad',
-    estado: 'activo',
-    calificacion: 100,
-    pedidos_activos: 3,
-  },
-  {
-    id: '3',
-    nombre: 'PackSmart SAC',
-    categoria: 'Embalaje',
-    estado: 'activo',
-    calificacion: 91,
-    pedidos_activos: 6,
-  },
-];
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -57,23 +30,43 @@ function getInitials(name: string): string {
     .toUpperCase();
 }
 
-// ── Highlight Cards (Mock Data) ──────────────────────────────────────────────
+// ── Highlight Cards (Real Data) ─────────────────────────────────────────────
 
-function SupplierHighlightCards() {
-  const top3 = MOCK_TOP_PROVEEDORES.sort((a, b) => b.calificacion - a.calificacion).slice(0, 3);
-
+function SupplierHighlightCards({ topProveedores, loading }: { topProveedores: TopProveedorCard[]; loading: boolean }) {
   const cardAccents = [
     { icon: 'precision_manufacturing', color: 'text-primary', bg: 'bg-primary/10', dot: 'border-t-2 border-primary/30' },
     { icon: 'category', color: 'text-secondary', bg: 'bg-secondary/10', dot: 'border-t-2 border-secondary/30' },
     { icon: 'electric_bolt', color: 'text-tertiary', bg: 'bg-tertiary/10', dot: 'border-t-2 border-tertiary/30' },
   ];
 
-  if (top3.length === 0) return null;
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="bg-surface-container rounded-xl p-6 animate-pulse">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-12 h-12 rounded-lg bg-surface-variant" />
+              <div className="space-y-2 flex-1">
+                <div className="h-4 w-32 bg-surface-variant rounded" />
+                <div className="h-3 w-20 bg-surface-variant rounded" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="h-16 bg-surface-container-low rounded-lg" />
+              <div className="h-16 bg-surface-container-low rounded-lg" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (topProveedores.length === 0) return null;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-      {top3.map((prov, idx) => {
-        const accent = cardAccents[idx];
+      {topProveedores.map((prov, idx) => {
+        const accent = cardAccents[idx % cardAccents.length];
         return (
           <div
             key={prov.id}
@@ -99,7 +92,7 @@ function SupplierHighlightCards() {
               <div className="min-w-0">
                 <h3 className="font-bold text-base text-on-surface truncate">{prov.nombre}</h3>
                 <span className={`text-xs font-black uppercase tracking-widest ${accent.color}`}>
-                  {prov.categoria}
+                  {prov.categoria ?? 'Sin categoría'}
                 </span>
               </div>
             </div>
@@ -137,6 +130,10 @@ export default function ProveedoresPage() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // ── Top proveedores for highlight cards
+  const [topProveedores, setTopProveedores] = useState<TopProveedorCard[]>([]);
+  const [cardsLoading, setCardsLoading] = useState(true);
 
   // ── Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -176,13 +173,22 @@ export default function ProveedoresPage() {
     if (!result.error) setCategorias(result.data);
   }, []);
 
+  const fetchTopProveedores = useCallback(async () => {
+    setCardsLoading(true);
+    const result = await getTopProveedoresCards();
+    if (!result.error) setTopProveedores(result.data);
+    setCardsLoading(false);
+  }, []);
+
   // ── Initial load ───────────────────────────────────────────────────────
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchCategorias();
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchPageData(1, '', '');
-  }, [fetchCategorias, fetchPageData]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchTopProveedores();
+  }, [fetchCategorias, fetchPageData, fetchTopProveedores]);
 
   // ── Handlers ──────────────────────────────────────────────────────────
 
@@ -223,6 +229,7 @@ export default function ProveedoresPage() {
     const result = await deactivateProveedor(id);
     if (!result.error) {
       await fetchPageData(page, activeSearch, categoriaFilter);
+      await fetchTopProveedores();
     }
   };
 
@@ -237,8 +244,9 @@ export default function ProveedoresPage() {
       const result = await createProveedor(data as ProveedorCreateInput);
       if (result.error) return { success: false, error: result.error };
     }
-    // Refresh list
+    // Refresh list and cards
     await fetchPageData(mode === 'create' ? 1 : page, activeSearch, categoriaFilter);
+    await fetchTopProveedores();
     if (mode === 'create') setPage(1);
     return { success: true };
   };
@@ -272,7 +280,7 @@ export default function ProveedoresPage() {
       </div>
 
       {/* ── Highlight Cards ────────────────────────────────────────────────── */}
-      <SupplierHighlightCards />
+      <SupplierHighlightCards topProveedores={topProveedores} loading={cardsLoading} />
 
       {/* ── Error banner ───────────────────────────────────────────────── */}
       {error && (

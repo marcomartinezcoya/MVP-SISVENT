@@ -1,70 +1,256 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
-import { MOCK_PROVEEDORES } from '@/lib/types/compra';
+import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import {
+  CompraDB,
+  CompraCreateInput,
+  CompraUpdateInput,
+  CompraDetalleInput,
+  EstadoCompra,
+  getEstadoLabel,
+  ProductoOption,
+  ProveedorOption,
+} from '@/lib/types/compra';
+import {
+  createCompra,
+  updateCompra,
+  generateNumeroOrden,
+  getProveedoresActivos,
+  getProductosActivos,
+  getCompraById,
+} from '@/app/compras/actions';
 
-interface DetalleItem {
-  id: string;
-  productoNombre: string;
-  cantidad: number;
-  precioUnitario: number;
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+interface DetalleRow extends CompraDetalleInput {
+  _key: string; // local UI key
+  producto_nombre: string;
+  producto_sku?: string;
 }
 
 interface CompraModalProps {
   isOpen: boolean;
   onClose: () => void;
-  // onSave would pass the created/edited object back to page.tsx
-  onSave?: (data: any) => void;
+  onSaved?: () => void; // called after successful save to refresh parent
   mode?: 'create' | 'edit' | 'view';
-  compra?: any;
+  compra?: CompraDB | null;
 }
 
-export function CompraModal({ isOpen, onClose, onSave, mode = 'create', compra }: CompraModalProps) {
-  // Use a minimal unique id generator for items
-  const generateId = () => Math.random().toString(36).substring(2, 9);
-  
+function makeKey() {
+  return Math.random().toString(36).slice(2, 9);
+}
+
+// ── Main Modal ────────────────────────────────────────────────────────────────
+
+export function CompraModal({ isOpen, onClose, onSaved, mode = 'create', compra }: CompraModalProps) {
   const isView = mode === 'view';
 
+  // ── Remote data
+  const [proveedores, setProveedores] = useState<ProveedorOption[]>([]);
+  const [productos, setProductos] = useState<ProductoOption[]>([]);
+  const [productoSearch, setProductoSearch] = useState('');
+  const [showProductoDropdown, setShowProductoDropdown] = useState(false);
+  const [activeRowKey, setActiveRowKey] = useState<string | null>(null);
+
+  const productoSearchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // ── Form state
+  const [proveedorId, setProveedorId] = useState('');
+  const [fechaEmision, setFechaEmision] = useState(new Date().toISOString().split('T')[0]);
+  const [estado, setEstado] = useState<EstadoCompra>('pendiente');
+  const [numeroOrden, setNumeroOrden] = useState('');
+  const [comentarios, setComentarios] = useState('');
+  const [detalles, setDetalles] = useState<DetalleRow[]>([]);
+
+  // ── UI state
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [loadingInit, setLoadingInit] = useState(true);
 
-  const [detalles, setDetalles] = useState<DetalleItem[]>([
-    { id: generateId(), productoNombre: 'Transformador Trifásico 50kVA', cantidad: 2, precioUnitario: 1250.00 },
-    { id: generateId(), productoNombre: 'Cable de Cobre THHN AWG 10', cantidad: 100, precioUnitario: 4.50 },
-  ]);
-
-  // Reactive calculations
-  const subtotal = useMemo(() => {
-    return detalles.reduce((acc, item) => acc + (item.cantidad * item.precioUnitario), 0);
-  }, [detalles]);
-
+  // ── Calculations
+  const subtotal = useMemo(
+    () => detalles.reduce((acc, d) => acc + d.cantidad * d.precio_unitario, 0),
+    [detalles],
+  );
   const igv = useMemo(() => subtotal * 0.18, [subtotal]);
   const total = useMemo(() => subtotal + igv, [subtotal, igv]);
 
-  // Event Handlers for line items
-  const handleAddItem = () => {
-    setDetalles([...detalles, { id: generateId(), productoNombre: '', cantidad: 1, precioUnitario: 0 }]);
-  };
+  const fmtSoles = (n: number) =>
+    `S/ ${n.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-  const handeRemoveItem = (id: string) => {
-    setDetalles(detalles.filter(d => d.id !== id));
-  };
+  // ── Load proveedores + numero_orden on open
+  const init = useCallback(async () => {
+    setLoadingInit(true);
+    setFormError(null);
 
-  const handleUpdateItem = (id: string, field: keyof DetalleItem, value: any) => {
-    setDetalles(detalles.map(d => {
-      if (d.id === id) {
-        return { ...d, [field]: value };
+    const [provResult] = await Promise.all([getProveedoresActivos()]);
+    setProveedores(provResult.data);
+
+    if (mode === 'create') {
+      const numResult = await generateNumeroOrden();
+      setNumeroOrden(numResult.data);
+      setFechaEmision(new Date().toISOString().split('T')[0]);
+      setProveedorId(provResult.data[0]?.id ?? '');
+      setEstado('pendiente');
+      setComentarios('');
+      setDetalles([]);
+    } else if (compra) {
+      // Load full compra with detalles
+      const fullResult = await getCompraById(compra.id);
+      const full = fullResult.data ?? compra;
+
+      setNumeroOrden(full.numero_orden);
+      setProveedorId(full.proveedor_id);
+      setFechaEmision(full.fecha_emision);
+      setEstado(full.estado);
+      setComentarios(full.comentarios ?? '');
+
+      if (full.compra_detalle && full.compra_detalle.length > 0) {
+        setDetalles(
+          full.compra_detalle.map((d) => ({
+            _key: makeKey(),
+            producto_id: d.producto_id,
+            producto_nombre: d.productos?.nombre ?? d.producto_id,
+            producto_sku: d.productos?.sku,
+            cantidad: d.cantidad,
+            precio_unitario: Number(d.precio_unitario),
+          })),
+        );
+      } else {
+        setDetalles([]);
       }
-      return d;
-    }));
+    }
+
+    setLoadingInit(false);
+  }, [mode, compra]);
+
+  useEffect(() => {
+    if (isOpen) {
+      init();
+    }
+  }, [isOpen, init]);
+
+  // Close on Escape
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    if (isOpen) document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [isOpen, onClose]);
+
+  // ── Product search with debounce
+  const handleProductoSearchChange = (key: string, value: string) => {
+    setActiveRowKey(key);
+    setProductoSearch(value);
+    updateDetalle(key, 'producto_nombre', value);
+    setShowProductoDropdown(true);
+
+    if (productoSearchTimeout.current) clearTimeout(productoSearchTimeout.current);
+    productoSearchTimeout.current = setTimeout(async () => {
+      const result = await getProductosActivos(value);
+      setProductos(result.data);
+    }, 300);
   };
 
-  const handleSaveWrapper = async () => {
+  const handleSelectProducto = (key: string, producto: ProductoOption) => {
+    setDetalles((prev) =>
+      prev.map((d) =>
+        d._key === key
+          ? {
+              ...d,
+              producto_id:     producto.id,
+              producto_nombre: producto.nombre,
+              producto_sku:    producto.sku,
+              precio_unitario: Number(producto.precio_compra),
+            }
+          : d,
+      ),
+    );
+    setShowProductoDropdown(false);
+    setProductoSearch('');
+    setActiveRowKey(null);
+  };
+
+  // ── Detalle row handlers
+  const addDetalle = async () => {
+    const result = await getProductosActivos('');
+    setProductos(result.data);
+    setDetalles((prev) => [
+      ...prev,
+      {
+        _key: makeKey(),
+        producto_id: '',
+        producto_nombre: '',
+        cantidad: 1,
+        precio_unitario: 0,
+      },
+    ]);
+  };
+
+  const removeDetalle = (key: string) => {
+    setDetalles((prev) => prev.filter((d) => d._key !== key));
+  };
+
+  const updateDetalle = (key: string, field: keyof DetalleRow, value: unknown) => {
+    setDetalles((prev) =>
+      prev.map((d) => (d._key === key ? { ...d, [field]: value } : d)),
+    );
+  };
+
+  // ── Submit
+  const handleSubmit = async () => {
+    setFormError(null);
+
+    if (!proveedorId) { setFormError('Selecciona un proveedor.'); return; }
+    if (!fechaEmision) { setFormError('La fecha de emisión es requerida.'); return; }
+    if (detalles.length === 0) { setFormError('Agrega al menos un producto.'); return; }
+    for (const d of detalles) {
+      if (!d.producto_id) { setFormError('Todos los productos deben estar seleccionados de la lista.'); return; }
+      if (d.cantidad <= 0) { setFormError('La cantidad debe ser mayor a 0.'); return; }
+    }
+
     setIsSubmitting(true);
-    // Simulate API delay
-    await new Promise(res => setTimeout(res, 600));
+
+    const detallesInput: CompraDetalleInput[] = detalles.map((d) => ({
+      producto_id:     d.producto_id,
+      cantidad:        d.cantidad,
+      precio_unitario: d.precio_unitario,
+    }));
+
+    let result;
+    if (mode === 'create') {
+      const input: CompraCreateInput = {
+        proveedor_id:  proveedorId,
+        fecha_emision: fechaEmision,
+        estado,
+        numero_orden:  numeroOrden,
+        comentarios,
+        detalles:      detallesInput,
+      };
+      result = await createCompra(input);
+    } else if (mode === 'edit' && compra) {
+      const input: CompraUpdateInput = {
+        proveedor_id:  proveedorId,
+        fecha_emision: fechaEmision,
+        estado,
+        comentarios,
+        detalles:      detallesInput,
+      };
+      result = await updateCompra(compra.id, input);
+    } else {
+      setIsSubmitting(false);
+      return;
+    }
+
     setIsSubmitting(false);
-    if (onSave) onSave({});
-    onClose();
+
+    if (result?.error) {
+      setFormError(result.error);
+    } else {
+      if (onSaved) await onSaved();
+      onClose();
+    }
   };
 
   if (!isOpen) return null;
@@ -73,7 +259,7 @@ export function CompraModal({ isOpen, onClose, onSave, mode = 'create', compra }
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-surface-container-lowest/80 backdrop-blur-md p-4 lg:p-8">
       {/* MODAL CONTAINER */}
       <div className="w-full max-w-5xl bg-surface-container-low rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[95vh] border border-outline-variant/20">
-        
+
         {/* Modal Header */}
         <div className="px-8 py-6 border-b border-outline-variant/15 flex justify-between items-center bg-surface-container-high/30 shrink-0">
           <div className="flex items-center gap-4">
@@ -89,87 +275,115 @@ export function CompraModal({ isOpen, onClose, onSave, mode = 'create', compra }
               </p>
             </div>
           </div>
-          <button 
-            onClick={onClose}
-            className="p-2 hover:bg-surface-variant rounded-full text-on-surface-variant transition-colors"
-          >
+          <button onClick={onClose} className="p-2 hover:bg-surface-variant rounded-full text-on-surface-variant transition-colors">
             <span className="material-symbols-outlined">close</span>
           </button>
         </div>
 
-        {/* Modal Body (Scrollable) */}
+        {/* Modal Body */}
         <div className="flex-1 overflow-y-auto p-8 space-y-8 relative">
-          
+
+          {/* Loading overlay */}
+          {loadingInit && (
+            <div className="absolute inset-0 flex items-center justify-center bg-surface-container-low/80 backdrop-blur-sm z-10">
+              <div className="flex flex-col items-center gap-3 text-on-surface-variant">
+                <span className="material-symbols-outlined text-4xl animate-spin">progress_activity</span>
+                <p className="text-sm font-medium">Cargando...</p>
+              </div>
+            </div>
+          )}
+
+          {/* Error banner */}
+          {formError && (
+            <div className="flex items-center gap-2 px-4 py-3 bg-error/10 border border-error/30 rounded-lg text-sm text-error">
+              <span className="material-symbols-outlined text-base shrink-0">error</span>
+              {formError}
+            </div>
+          )}
+
           {/* Section 1: Header Fields */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            {/* Proveedor */}
             <div className="md:col-span-2">
               <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-2">
                 Proveedor <span className="text-error">*</span>
               </label>
               <div className="relative group">
-                <select 
+                <select
                   className="w-full bg-surface-container-highest border-none rounded-md text-on-surface py-3 px-4 focus:ring-2 focus:ring-primary appearance-none cursor-pointer outline-none disabled:opacity-70"
                   disabled={isView}
+                  value={proveedorId}
+                  onChange={(e) => setProveedorId(e.target.value)}
                 >
                   <option value="">Seleccione un proveedor...</option>
-                  {MOCK_PROVEEDORES.map((prov) => (
+                  {proveedores.map((prov) => (
                     <option key={prov.id} value={prov.id}>{prov.nombre}</option>
                   ))}
                 </select>
                 {!isView && <span className="material-symbols-outlined absolute right-4 top-3 text-on-surface-variant pointer-events-none group-hover:text-primary transition-colors">expand_more</span>}
               </div>
             </div>
-            
+
+            {/* Fecha */}
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-2">
                 Fecha de Emisión <span className="text-error">*</span>
               </label>
-              <div className="relative">
-                <input 
-                  type="date" 
-                  className="w-full bg-surface-container-highest border-none rounded-md text-on-surface py-3 px-4 focus:ring-2 focus:ring-primary outline-none disabled:opacity-70" 
-                  style={{ colorScheme: 'dark' }} 
-                  defaultValue={new Date().toISOString().split('T')[0]} 
-                  disabled={isView}
-                />
-              </div>
+              <input
+                type="date"
+                className="w-full bg-surface-container-highest border-none rounded-md text-on-surface py-3 px-4 focus:ring-2 focus:ring-primary outline-none disabled:opacity-70"
+                style={{ colorScheme: 'dark' }}
+                value={fechaEmision}
+                onChange={(e) => setFechaEmision(e.target.value)}
+                disabled={isView}
+              />
             </div>
-            
+
+            {/* Estado */}
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-2">
                 Estado <span className="text-error">*</span>
               </label>
               <div className="relative group">
-                <select 
+                <select
                   className="w-full bg-surface-container-highest border-none rounded-md text-on-surface py-3 px-4 focus:ring-2 focus:ring-primary appearance-none cursor-pointer outline-none disabled:opacity-70"
                   disabled={isView}
+                  value={estado}
+                  onChange={(e) => setEstado(e.target.value as EstadoCompra)}
                 >
-                  <option value="Pendiente">Pendiente</option>
-                  <option value="Recibido">Recibido</option>
-                  <option value="Cancelado">Cancelado</option>
+                  <option value="pendiente">{getEstadoLabel('pendiente')}</option>
+                  <option value="recibido">{getEstadoLabel('recibido')}</option>
+                  <option value="cancelado">{getEstadoLabel('cancelado')}</option>
                 </select>
                 {!isView && <span className="material-symbols-outlined absolute right-4 top-3 text-on-surface-variant pointer-events-none">expand_more</span>}
               </div>
             </div>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            {/* Numero Orden */}
             <div className="md:col-span-1">
               <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-2">
                 Nº de Orden <span className="text-error">*</span>
               </label>
-              <input 
-                type="text" 
-                className="w-full bg-surface-container-highest border-none rounded-md text-primary font-bold py-3 px-4 focus:ring-2 focus:ring-primary outline-none" 
-                defaultValue="PO-2024-089" 
+              <input
+                type="text"
+                className="w-full bg-surface-container-highest border-none rounded-md text-primary font-bold py-3 px-4 focus:ring-2 focus:ring-primary outline-none disabled:opacity-70"
+                value={numeroOrden}
+                onChange={(e) => setNumeroOrden(e.target.value)}
+                disabled={isView}
+                readOnly={mode === 'edit'}
               />
             </div>
+            {/* Comentarios */}
             <div className="md:col-span-3">
-              <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-2">COMENTARIOS</label>
-              <input 
-                type="text" 
-                className="w-full bg-surface-container-highest border-none rounded-md text-on-surface py-3 px-4 focus:ring-2 focus:ring-primary outline-none disabled:opacity-70" 
-                placeholder="Referencia de proyecto o comentarios adicionales..." 
+              <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-2">Comentarios</label>
+              <input
+                type="text"
+                className="w-full bg-surface-container-highest border-none rounded-md text-on-surface py-3 px-4 focus:ring-2 focus:ring-primary outline-none disabled:opacity-70"
+                placeholder="Referencia de proyecto o comentarios adicionales..."
+                value={comentarios}
+                onChange={(e) => setComentarios(e.target.value)}
                 disabled={isView}
               />
             </div>
@@ -179,26 +393,16 @@ export function CompraModal({ isOpen, onClose, onSave, mode = 'create', compra }
           <div className="space-y-4">
             <div className="flex justify-between items-center gap-4">
               <h3 className="text-sm font-bold uppercase tracking-widest text-primary shrink-0">Partidas de la Orden</h3>
-              <div className="flex items-center gap-3 flex-1 justify-end">
-                <div className="relative max-w-sm w-full">
-                  <span className="material-symbols-outlined absolute left-3 top-2 text-on-surface-variant text-sm">search</span>
-                  <input 
-                    type="text" 
-                    className="w-full bg-surface-container-highest border-none rounded-md text-on-surface py-1.5 pl-9 pr-4 text-xs focus:ring-1 focus:ring-primary/50 outline-none" 
-                    placeholder="Buscar producto..." 
-                  />
-                </div>
-                {isView ? null : (
-                  <button 
-                    onClick={handleAddItem}
-                    className="text-xs flex items-center gap-1.5 px-4 py-2 bg-surface-variant hover:bg-surface-bright text-primary rounded-md transition-all font-bold whitespace-nowrap shadow-sm"
-                  >
-                    <span className="material-symbols-outlined text-sm">add_circle</span> Añadir Producto
-                  </button>
-                )}
-              </div>
+              {!isView && (
+                <button
+                  onClick={addDetalle}
+                  className="text-xs flex items-center gap-1.5 px-4 py-2 bg-surface-variant hover:bg-surface-bright text-primary rounded-md transition-all font-bold whitespace-nowrap shadow-sm"
+                >
+                  <span className="material-symbols-outlined text-sm">add_circle</span> Añadir Producto
+                </button>
+              )}
             </div>
-            
+
             <div className="overflow-x-auto rounded-lg border border-outline-variant/10">
               <table className="w-full text-left border-collapse min-w-[600px]">
                 <thead>
@@ -207,55 +411,101 @@ export function CompraModal({ isOpen, onClose, onSave, mode = 'create', compra }
                     <th className="px-4 py-3 font-semibold w-24">Cant.</th>
                     <th className="px-4 py-3 font-semibold w-40">Precio Unit.</th>
                     <th className="px-4 py-3 font-semibold w-40">Subtotal</th>
-                    {!isView && <th className="px-4 py-3 font-semibold w-12 text-center"></th>}
+                    {!isView && <th className="px-4 py-3 font-semibold w-12 text-center" />}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-outline-variant/5">
-                  {detalles.map(item => (
-                    <tr key={item.id} className="group hover:bg-surface-container-highest/30 transition-colors">
+                  {detalles.map((item) => (
+                    <tr key={item._key} className="group hover:bg-surface-container-highest/30 transition-colors">
+                      {/* Producto selector */}
                       <td className="px-4 py-3">
-                        <div className="relative group/search">
-                          <input 
-                            type="text" 
-                            className="w-full bg-transparent border-none p-0 focus:ring-0 text-sm text-on-surface outline-none disabled:opacity-70" 
-                            value={item.productoNombre}
-                            onChange={(e) => handleUpdateItem(item.id, 'productoNombre', e.target.value)}
-                            placeholder="Nombre del producto..."
+                        <div className="relative">
+                          <input
+                            type="text"
+                            className="w-full bg-transparent border-none p-0 focus:ring-0 text-sm text-on-surface outline-none disabled:opacity-70"
+                            value={item.producto_nombre}
+                            onChange={(e) => handleProductoSearchChange(item._key, e.target.value)}
+                            onFocus={async () => {
+                              setActiveRowKey(item._key);
+                              setShowProductoDropdown(true);
+                              const result = await getProductosActivos(item.producto_nombre);
+                              setProductos(result.data);
+                            }}
+                            onBlur={() => {
+                              // Delay to allow click on dropdown
+                              setTimeout(() => setShowProductoDropdown(false), 200);
+                            }}
+                            placeholder="Buscar producto por nombre o SKU..."
                             disabled={isView}
                           />
-                          {!isView && <div className="absolute inset-x-0 -bottom-1 h-px bg-outline-variant/30 group-hover/search:bg-primary transition-all"></div>}
+                          {!isView && <div className="absolute inset-x-0 -bottom-1 h-px bg-outline-variant/30 group-hover:bg-primary transition-all" />}
+
+                          {/* Dropdown */}
+                          {showProductoDropdown && activeRowKey === item._key && productos.length > 0 && (
+                            <div className="absolute z-20 top-full left-0 mt-1 w-full min-w-[280px] bg-surface-container-high border border-outline-variant/20 rounded-lg shadow-2xl shadow-black/40 overflow-hidden">
+                              {productos.slice(0, 8).map((p) => (
+                                <button
+                                  key={p.id}
+                                  type="button"
+                                  className="w-full text-left px-4 py-2.5 hover:bg-surface-container-highest transition-colors flex items-center justify-between gap-3"
+                                  onClick={() => handleSelectProducto(item._key, p)}
+                                >
+                                  <div className="min-w-0">
+                                    <p className="text-sm font-medium text-on-surface truncate">{p.nombre}</p>
+                                    <p className="text-xs text-on-surface-variant font-mono">{p.sku}</p>
+                                  </div>
+                                  <div className="text-right shrink-0">
+                                    <p className="text-xs font-bold text-primary">S/ {Number(p.precio_compra).toFixed(2)}</p>
+                                    <p className="text-[10px] text-on-surface-variant">Stock: {p.stock_actual}</p>
+                                  </div>
+                                </button>
+                              ))}
+                            </div>
+                          )}
                         </div>
+                        {item.producto_sku && (
+                          <p className="text-[10px] text-on-surface-variant font-mono mt-0.5">{item.producto_sku}</p>
+                        )}
                       </td>
+
+                      {/* Cantidad */}
                       <td className="px-4 py-3">
-                        <input 
-                          type="number" 
+                        <input
+                          type="number"
                           min="1"
-                          className="w-full bg-transparent border-none p-0 focus:ring-0 text-sm text-on-surface text-center outline-none disabled:opacity-70" 
+                          className="w-full bg-transparent border-none p-0 focus:ring-0 text-sm text-on-surface text-center outline-none disabled:opacity-70"
                           value={item.cantidad || ''}
-                          onChange={(e) => handleUpdateItem(item.id, 'cantidad', parseFloat(e.target.value) || 0)}
+                          onChange={(e) => updateDetalle(item._key, 'cantidad', parseInt(e.target.value) || 0)}
                           disabled={isView}
                         />
                       </td>
+
+                      {/* Precio unitario */}
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-1">
                           <span className="text-on-surface-variant text-xs">S/</span>
-                          <input 
-                            type="number" 
+                          <input
+                            type="number"
                             step="0.01"
-                            className="w-full bg-transparent border-none p-0 focus:ring-0 text-sm text-on-surface outline-none disabled:opacity-70" 
-                            value={item.precioUnitario || ''}
-                            onChange={(e) => handleUpdateItem(item.id, 'precioUnitario', parseFloat(e.target.value) || 0)}
+                            min="0"
+                            className="w-full bg-transparent border-none p-0 focus:ring-0 text-sm text-on-surface outline-none disabled:opacity-70"
+                            value={item.precio_unitario || ''}
+                            onChange={(e) => updateDetalle(item._key, 'precio_unitario', parseFloat(e.target.value) || 0)}
                             disabled={isView}
                           />
                         </div>
                       </td>
+
+                      {/* Subtotal */}
                       <td className="px-4 py-3 text-sm font-bold text-on-surface">
-                        S/ {(item.cantidad * item.precioUnitario).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        S/ {(item.cantidad * item.precio_unitario).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </td>
+
+                      {/* Delete */}
                       {!isView && (
                         <td className="px-4 py-3 text-center">
-                          <button 
-                            onClick={() => handeRemoveItem(item.id)}
+                          <button
+                            onClick={() => removeDetalle(item._key)}
                             className="text-on-surface-variant hover:text-error transition-colors"
                           >
                             <span className="material-symbols-outlined text-lg">delete_sweep</span>
@@ -267,9 +517,16 @@ export function CompraModal({ isOpen, onClose, onSave, mode = 'create', compra }
                   {!isView && (
                     <tr className="bg-surface-container-highest/10">
                       <td className="px-4 py-3 italic text-on-surface-variant/50 text-xs">
-                        Click en 'Añadir Producto' para agregar más filas...
+                        Click en &apos;Añadir Producto&apos; para agregar más filas...
                       </td>
-                      <td className="px-4 py-3" colSpan={4}></td>
+                      <td className="px-4 py-3" colSpan={4} />
+                    </tr>
+                  )}
+                  {detalles.length === 0 && isView && (
+                    <tr>
+                      <td colSpan={4} className="px-4 py-8 text-center text-on-surface-variant/50 text-sm italic">
+                        Sin partidas registradas
+                      </td>
                     </tr>
                   )}
                 </tbody>
@@ -283,38 +540,32 @@ export function CompraModal({ isOpen, onClose, onSave, mode = 'create', compra }
               <div className="flex items-center gap-3 p-4 rounded-lg bg-tertiary-container/5 border border-tertiary/10">
                 <span className="material-symbols-outlined text-tertiary" style={{ fontVariationSettings: '"FILL" 1' }}>info</span>
                 <p className="text-xs text-on-surface-variant leading-relaxed">
-                  Esta orden se convertirá en stock disponible una vez que el estado cambie a <span className="text-tertiary font-bold">Recibido</span>.
+                  El stock se actualizará automáticamente cuando el estado cambie a{' '}
+                  <span className="text-tertiary font-bold">Recibido</span>.
                 </p>
               </div>
             </div>
-            
+
             <div className="w-full md:w-80 space-y-3 bg-surface-container-high/40 p-6 rounded-xl border border-outline-variant/10">
               <div className="flex justify-between items-center">
                 <span className="text-sm text-on-surface-variant">Subtotal</span>
-                <span className="text-sm font-medium text-on-surface">
-                  S/ {subtotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </span>
+                <span className="text-sm font-medium text-on-surface">{fmtSoles(subtotal)}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-on-surface-variant">IGV (18%)</span>
-                <span className="text-sm font-medium text-on-surface">
-                  S/ {igv.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </span>
+                <span className="text-sm font-medium text-on-surface">{fmtSoles(igv)}</span>
               </div>
               <div className="pt-3 mt-3 border-t border-outline-variant/20 flex justify-between items-center">
                 <span className="text-base font-bold text-on-surface">Total General</span>
-                <span className="text-xl font-extrabold text-secondary tracking-tight">
-                  S/ {total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </span>
+                <span className="text-xl font-extrabold text-secondary tracking-tight">{fmtSoles(total)}</span>
               </div>
             </div>
           </div>
-          
         </div>
 
         {/* Modal Footer */}
         <div className="px-8 py-6 bg-surface-container-highest/20 border-t border-outline-variant/15 flex flex-col sm:flex-row justify-end gap-4 shrink-0">
-          <button 
+          <button
             type="button"
             disabled={isSubmitting}
             onClick={onClose}
@@ -323,19 +574,18 @@ export function CompraModal({ isOpen, onClose, onSave, mode = 'create', compra }
             {isView ? 'Cerrar' : 'Cancelar'}
           </button>
           {!isView && (
-            <button 
-              onClick={handleSaveWrapper}
+            <button
+              onClick={handleSubmit}
               disabled={isSubmitting}
               className="px-10 py-3 text-sm font-bold bg-gradient-to-br from-primary-dim to-primary text-on-primary-container hover:shadow-[0_0_20px_rgba(125,156,255,0.4)] transition-all rounded-md active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:shadow-none"
             >
               <span className={`material-symbols-outlined text-lg ${isSubmitting ? 'animate-spin' : ''}`}>
                 {isSubmitting ? 'progress_activity' : 'save'}
               </span>
-              {isSubmitting ? 'Guardando...' : (mode === 'edit' ? 'Guardar Cambios' : 'Guardar Orden')}
+              {isSubmitting ? 'Guardando...' : mode === 'edit' ? 'Guardar Cambios' : 'Guardar Orden'}
             </button>
           )}
         </div>
-
       </div>
     </div>
   );
