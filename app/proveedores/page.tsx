@@ -147,6 +147,7 @@ export default function ProveedoresPage() {
   const limit = 10;
 
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const didMount = useRef(false);
 
   // ── Derived pagination ─────────────────────────────────────────────────
   const totalPages = Math.ceil(total / limit);
@@ -168,11 +169,6 @@ export default function ProveedoresPage() {
     setLoading(false);
   }, []);
 
-  const fetchCategorias = useCallback(async () => {
-    const result = await getCategorias();
-    if (!result.error) setCategorias(result.data);
-  }, []);
-
   const fetchTopProveedores = useCallback(async () => {
     setCardsLoading(true);
     const result = await getTopProveedoresCards();
@@ -180,15 +176,26 @@ export default function ProveedoresPage() {
     setCardsLoading(false);
   }, []);
 
-  // ── Initial load ───────────────────────────────────────────────────────
+  // ── Initial load (all in parallel) ─────────────────────────────────────
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchCategorias();
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchPageData(1, '', '');
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchTopProveedores();
-  }, [fetchCategorias, fetchPageData, fetchTopProveedores]);
+    async function init() {
+      const [, pageResult, cardsResult] = await Promise.all([
+        getCategorias().then(r => { if (!r.error) setCategorias(r.data); }),
+        getProveedores({ page: 1, limit, search: '', categoria_id: '' }),
+        getTopProveedoresCards(),
+      ]);
+      if (!pageResult.error) {
+        setProveedores(pageResult.data.data);
+        setTotal(pageResult.data.total);
+      }
+      if (!cardsResult.error) setTopProveedores(cardsResult.data);
+      setLoading(false);
+      setCardsLoading(false);
+      didMount.current = true;
+    }
+    init();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── Handlers ──────────────────────────────────────────────────────────
 
@@ -228,8 +235,10 @@ export default function ProveedoresPage() {
   const handleDeactivate = async (id: string) => {
     const result = await deactivateProveedor(id);
     if (!result.error) {
-      await fetchPageData(page, activeSearch, categoriaFilter);
-      await fetchTopProveedores();
+      await Promise.all([
+        fetchPageData(page, activeSearch, categoriaFilter),
+        fetchTopProveedores(),
+      ]);
     }
   };
 
@@ -244,9 +253,11 @@ export default function ProveedoresPage() {
       const result = await createProveedor(data as ProveedorCreateInput);
       if (result.error) return { success: false, error: result.error };
     }
-    // Refresh list and cards
-    await fetchPageData(mode === 'create' ? 1 : page, activeSearch, categoriaFilter);
-    await fetchTopProveedores();
+    // Refresh list and cards in parallel
+    await Promise.all([
+      fetchPageData(mode === 'create' ? 1 : page, activeSearch, categoriaFilter),
+      fetchTopProveedores(),
+    ]);
     if (mode === 'create') setPage(1);
     return { success: true };
   };

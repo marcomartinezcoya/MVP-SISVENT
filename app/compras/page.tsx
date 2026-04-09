@@ -123,6 +123,8 @@ export default function ComprasPage() {
   const [searchInput, setSearchInput] = useState('');
   const [activeSearch, setActiveSearch] = useState('');
   const [estadoFilter, setEstadoFilter] = useState('');
+  const [fechaInicio, setFechaInicio] = useState('');
+  const [fechaFin, setFechaFin] = useState('');
   const [page, setPage] = useState(1);
   const limit = 10;
 
@@ -134,10 +136,10 @@ export default function ComprasPage() {
   const toItem = Math.min(page * limit, total);
 
   // ── Fetch helpers
-  const fetchCompras = useCallback(async (p: number, search: string, estado: string) => {
+  const fetchCompras = useCallback(async (p: number, search: string, estado: string, fInicio: string, fFin: string) => {
     setLoading(true);
     setError(null);
-    const result = await getCompras({ page: p, limit, search, estado });
+    const result = await getCompras({ page: p, limit, search, estado, fechaInicio: fInicio, fechaFin: fFin });
     if (result.error) {
       setError(result.error);
     } else {
@@ -148,40 +150,66 @@ export default function ComprasPage() {
   }, []);
 
   const fetchStats = useCallback(async () => {
-    setStatsLoading(true);
     const result = await getComprasDashboardStats();
     if (!result.error) setStats(result.data);
     setStatsLoading(false);
   }, []);
 
-  // ── Initial load
+  // ── Initial load (parallelized)
   useEffect(() => {
-    fetchCompras(1, '', '');
-    fetchStats();
-  }, [fetchCompras, fetchStats]);
+    async function init() {
+      const [comprasResult, statsResult] = await Promise.all([
+        getCompras({ page: 1, limit, search: '', estado: '', fechaInicio: '', fechaFin: '' }),
+        getComprasDashboardStats(),
+      ]);
+      if (!comprasResult.error) {
+        setCompras(comprasResult.data.data);
+        setTotal(comprasResult.data.total);
+      }
+      if (!statsResult.error) setStats(statsResult.data);
+      setLoading(false);
+      setStatsLoading(false);
+    }
+    init();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── Handlers
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setSearchInput(value);
-    if (searchTimeout.current) clearTimeout(searchTimeout.current);
-    searchTimeout.current = setTimeout(() => {
-      setPage(1);
-      setActiveSearch(value);
-      fetchCompras(1, value, estadoFilter);
-    }, 350);
+    setSearchInput(e.target.value);
   };
 
   const handleEstadoChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const val = e.target.value;
-    setEstadoFilter(val);
+    setEstadoFilter(e.target.value);
+  };
+
+  const handleFechaInicioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFechaInicio(e.target.value);
+  };
+
+  const handleFechaFinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFechaFin(e.target.value);
+  };
+
+  const executeSearch = () => {
     setPage(1);
-    fetchCompras(1, activeSearch, val);
+    setActiveSearch(searchInput);
+    fetchCompras(1, searchInput, estadoFilter, fechaInicio, fechaFin);
+  };
+
+  const handleLimpiarFechas = () => {
+    setFechaInicio('');
+    setFechaFin('');
+    setEstadoFilter('');
+    setSearchInput('');
+    setActiveSearch('');
+    setPage(1);
+    fetchCompras(1, '', '', '', '');
   };
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
-    fetchCompras(newPage, activeSearch, estadoFilter);
+    fetchCompras(newPage, activeSearch, estadoFilter, fechaInicio, fechaFin);
   };
 
   const handleOpenNew = () => {
@@ -207,9 +235,11 @@ export default function ComprasPage() {
   };
 
   const handleSaved = async () => {
-    // Refresh both table and stats after any save
-    await fetchCompras(modalMode === 'create' ? 1 : page, activeSearch, estadoFilter);
-    await fetchStats();
+    // Refresh both table and stats in parallel after any save
+    await Promise.all([
+      fetchCompras(modalMode === 'create' ? 1 : page, activeSearch, estadoFilter, fechaInicio, fechaFin),
+      fetchStats(),
+    ]);
     if (modalMode === 'create') setPage(1);
   };
 
@@ -249,49 +279,108 @@ export default function ComprasPage() {
       <div className="bg-surface-container-low rounded-lg overflow-hidden border border-outline-variant/10 shadow-2xl shadow-black/40">
 
         {/* Table Controls */}
-        <div className="p-6 flex flex-col md:flex-row gap-4 items-center justify-between mb-4">
-          <div className="flex items-center gap-4 w-full md:w-auto">
-            <div className="relative w-full md:w-72">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
-              <input
-                className="w-full bg-surface-container border border-outline-variant/20 rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-primary/40 focus:border-primary text-on-surface transition-all outline-none"
-                placeholder="Buscar por Nº de orden..."
-                type="text"
-                value={searchInput}
-                onChange={handleSearchChange}
-              />
-            </div>
-            <select
-              className="bg-surface-container border border-outline-variant/20 rounded-lg px-4 py-2 text-sm text-on-surface focus:ring-2 focus:ring-primary/40 transition-all outline-none appearance-none cursor-pointer"
-              onChange={handleEstadoChange}
-              value={estadoFilter}
-            >
-              <option value="">Estado: Todos</option>
-              <option value="pendiente">Pendiente</option>
-              <option value="recibido">Recibido</option>
-              <option value="cancelado">Cancelado</option>
-            </select>
-          </div>
+        <div className="p-6 border-b border-outline-variant/10 mb-4 bg-surface-container-low">
+          <div className="flex flex-col xl:flex-row gap-4 items-start xl:items-center justify-between">
+            <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
+              
+              {/* Buscador de orden */}
+              <div className="relative w-full sm:w-64">
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+                <input
+                  className="w-full bg-surface-container border border-outline-variant/20 rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-primary/40 focus:border-primary text-on-surface transition-all outline-none"
+                  placeholder="Buscar por Nº de orden..."
+                  type="text"
+                  value={searchInput}
+                  onChange={handleSearchChange}
+                  onKeyDown={(e) => e.key === 'Enter' && executeSearch()}
+                />
+              </div>
 
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-on-surface-variant font-medium">
-              {total === 0 ? 'Sin resultados' : `Mostrando ${fromItem}-${toItem} de ${total}`}
-            </span>
-            <div className="flex gap-1">
-              <button
-                disabled={page <= 1 || loading}
-                onClick={() => handlePageChange(Math.max(1, page - 1))}
-                className="p-1.5 bg-surface-container-highest rounded-md text-on-surface-variant hover:text-on-surface transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              {/* Selector de estado */}
+              <select
+                className="bg-surface-container border border-outline-variant/20 rounded-lg px-4 py-2 text-sm text-on-surface focus:ring-2 focus:ring-primary/40 transition-all outline-none appearance-none cursor-pointer"
+                onChange={handleEstadoChange}
+                value={estadoFilter}
               >
-                <span className="material-symbols-outlined text-lg">chevron_left</span>
-              </button>
+                <option value="">Estado: Todos</option>
+                <option value="pendiente">Pendiente</option>
+                <option value="recibido">Recibido</option>
+                <option value="cancelado">Cancelado</option>
+              </select>
+
+              {/* Filtro de Fechas */}
+              <div className="flex items-center gap-2 ml-1">
+                <span className="material-symbols-outlined text-on-surface-variant text-[18px]">calendar_today</span>
+                <span className="text-xs font-bold uppercase tracking-wider text-on-surface-variant whitespace-nowrap">Emisión</span>
+              </div>
+              
+              <div className="flex items-center gap-2 bg-surface-container border border-outline-variant/20 rounded-lg px-3 py-2 h-[38px] focus-within:ring-2 focus-within:ring-primary/40 focus-within:border-primary transition-all box-border">
+                <span className="text-xs font-medium text-on-surface-variant shrink-0">Desde:</span>
+                <input
+                  type="date"
+                  className="bg-transparent border-none text-sm text-on-surface outline-none cursor-pointer p-0 h-full"
+                  style={{ colorScheme: 'dark' }}
+                  value={fechaInicio}
+                  onChange={handleFechaInicioChange}
+                  title="Fecha inicio"
+                />
+              </div>
+              <span className="text-on-surface-variant text-xs font-bold">—</span>
+              <div className="flex items-center gap-2 bg-surface-container border border-outline-variant/20 rounded-lg px-3 py-2 h-[38px] focus-within:ring-2 focus-within:ring-primary/40 focus-within:border-primary transition-all box-border">
+                <span className="text-xs font-medium text-on-surface-variant shrink-0">Hasta:</span>
+                <input
+                  type="date"
+                  className="bg-transparent border-none text-sm text-on-surface outline-none cursor-pointer p-0 h-full"
+                  style={{ colorScheme: 'dark' }}
+                  value={fechaFin}
+                  onChange={handleFechaFinChange}
+                  title="Fecha fin"
+                />
+              </div>
+
+              {/* Acciones */}
               <button
-                disabled={page >= totalPages || totalPages === 0 || loading}
-                onClick={() => handlePageChange(Math.min(totalPages, page + 1))}
-                className="p-1.5 bg-surface-container-highest rounded-md text-on-surface-variant hover:text-on-surface transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                onClick={executeSearch}
+                className="flex items-center gap-1.5 ml-2 px-4 py-2 bg-primary/10 text-primary hover:bg-primary/20 rounded-lg font-bold transition-all text-sm shadow-sm"
+                title="Ejecutar búsqueda"
               >
-                <span className="material-symbols-outlined text-lg">chevron_right</span>
+                <span className="material-symbols-outlined text-[18px]">search</span>
+                Buscar
               </button>
+
+              {(fechaInicio || fechaFin || estadoFilter || searchInput) && (
+                <button
+                  onClick={handleLimpiarFechas}
+                  className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-on-surface-variant hover:text-error hover:bg-error/10 rounded-lg transition-all border border-transparent hover:border-error/20"
+                  title="Limpiar todos los filtros"
+                >
+                  <span className="material-symbols-outlined text-[16px]">close</span>
+                  Limpiar
+                </button>
+              )}
+            </div>
+
+            {/* Pagination info and controls */}
+            <div className="flex items-center gap-3 shrink-0 ml-auto w-full xl:w-auto justify-between xl:justify-end border-t border-outline-variant/10 xl:border-t-0 pt-4 xl:pt-0 mt-4 xl:mt-0">
+              <span className="text-xs text-on-surface-variant font-medium">
+                {total === 0 ? 'Sin resultados' : `Mostrando ${fromItem}-${toItem} de ${total}`}
+              </span>
+              <div className="flex gap-1">
+                <button
+                  disabled={page <= 1 || loading}
+                  onClick={() => handlePageChange(Math.max(1, page - 1))}
+                  className="p-1.5 bg-surface-container-highest rounded-md text-on-surface-variant hover:text-on-surface transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <span className="material-symbols-outlined text-lg">chevron_left</span>
+                </button>
+                <button
+                  disabled={page >= totalPages || totalPages === 0 || loading}
+                  onClick={() => handlePageChange(Math.min(totalPages, page + 1))}
+                  className="p-1.5 bg-surface-container-highest rounded-md text-on-surface-variant hover:text-on-surface transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <span className="material-symbols-outlined text-lg">chevron_right</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>

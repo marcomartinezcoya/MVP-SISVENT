@@ -90,7 +90,7 @@ export function CompraModal({ isOpen, onClose, onSaved, mode = 'create', compra 
       const numResult = await generateNumeroOrden();
       setNumeroOrden(numResult.data);
       setFechaEmision(new Date().toISOString().split('T')[0]);
-      setProveedorId(provResult.data[0]?.id ?? '');
+      setProveedorId('');
       setEstado('pendiente');
       setComentarios('');
       setDetalles([]);
@@ -420,43 +420,49 @@ export function CompraModal({ isOpen, onClose, onSaved, mode = 'create', compra 
                       {/* Producto selector */}
                       <td className="px-4 py-3">
                         <div className="relative">
-                          <input
-                            type="text"
-                            className="w-full bg-transparent border-none p-0 focus:ring-0 text-sm text-on-surface outline-none disabled:opacity-70"
-                            value={item.producto_nombre}
-                            onChange={(e) => handleProductoSearchChange(item._key, e.target.value)}
-                            onFocus={async () => {
-                              setActiveRowKey(item._key);
-                              setShowProductoDropdown(true);
-                              const result = await getProductosActivos(item.producto_nombre);
-                              setProductos(result.data);
-                            }}
-                            onBlur={() => {
-                              // Delay to allow click on dropdown
-                              setTimeout(() => setShowProductoDropdown(false), 200);
-                            }}
-                            placeholder="Buscar producto por nombre o SKU..."
-                            disabled={isView}
-                          />
-                          {!isView && <div className="absolute inset-x-0 -bottom-1 h-px bg-outline-variant/30 group-hover:bg-primary transition-all" />}
+                          <div className={`relative ${!isView ? 'bg-surface-container-highest rounded-md' : 'bg-transparent'}`}>
+                            <input
+                              type="text"
+                              className={`w-full border-none text-sm text-on-surface focus:ring-2 focus:ring-primary outline-none disabled:opacity-70 ${!isView ? 'bg-transparent py-2.5 pl-4 pr-10 rounded-md placeholder-on-surface-variant/50' : 'bg-transparent p-0'}`}
+                              value={item.producto_nombre}
+                              onChange={(e) => handleProductoSearchChange(item._key, e.target.value)}
+                              onFocus={async () => {
+                                setActiveRowKey(item._key);
+                                setShowProductoDropdown(true);
+                                const result = await getProductosActivos(item.producto_nombre);
+                                setProductos(result.data);
+                              }}
+                              onBlur={() => {
+                                // Delay to allow click on dropdown
+                                setTimeout(() => setShowProductoDropdown(false), 200);
+                              }}
+                              placeholder="Buscar producto por nombre..."
+                              disabled={isView}
+                            />
+                            {!isView && (
+                              <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant/50 pointer-events-none text-[20px]">
+                                expand_more
+                              </span>
+                            )}
+                          </div>
 
                           {/* Dropdown */}
                           {showProductoDropdown && activeRowKey === item._key && productos.length > 0 && (
-                            <div className="absolute z-20 top-full left-0 mt-1 w-full min-w-[280px] bg-surface-container-high border border-outline-variant/20 rounded-lg shadow-2xl shadow-black/40 overflow-hidden">
+                            <div className="absolute z-50 top-[calc(100%+4px)] left-0 w-[120%] min-w-[320px] bg-surface-container-highest border border-outline-variant/20 rounded-md shadow-[0_10px_40px_rgba(0,0,0,0.6)] py-1 overflow-hidden">
                               {productos.slice(0, 8).map((p) => (
                                 <button
                                   key={p.id}
                                   type="button"
-                                  className="w-full text-left px-4 py-2.5 hover:bg-surface-container-highest transition-colors flex items-center justify-between gap-3"
+                                  className="w-full text-left px-4 py-2.5 hover:bg-primary/10 transition-colors flex items-center justify-between gap-3 group"
                                   onClick={() => handleSelectProducto(item._key, p)}
                                 >
                                   <div className="min-w-0">
-                                    <p className="text-sm font-medium text-on-surface truncate">{p.nombre}</p>
-                                    <p className="text-xs text-on-surface-variant font-mono">{p.sku}</p>
+                                    <p className="text-sm font-medium text-on-surface truncate group-hover:text-primary transition-colors">{p.nombre}</p>
+                                    <p className="text-xs text-on-surface-variant group-hover:text-primary/70 transition-colors font-mono">{p.sku}</p>
                                   </div>
                                   <div className="text-right shrink-0">
                                     <p className="text-xs font-bold text-primary">S/ {Number(p.precio_compra).toFixed(2)}</p>
-                                    <p className="text-[10px] text-on-surface-variant">Stock: {p.stock_actual}</p>
+                                    <p className="text-[10px] text-on-surface-variant group-hover:text-primary/70 transition-colors">Stock: {p.stock_actual}</p>
                                   </div>
                                 </button>
                               ))}

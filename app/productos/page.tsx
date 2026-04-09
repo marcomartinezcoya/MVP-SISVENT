@@ -41,6 +41,7 @@ export default function ProductosPage() {
   const [categoria, setCategoria] = useState('');
 
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const didMount = useRef(false);
 
   // ── Data fetching ─────────────────────────────────────────────────
   // Una sola Server Action que paraleliza productos + stats en la DB.
@@ -69,10 +70,13 @@ export default function ProductosPage() {
     if (!result.error) setStats(result.data);
   }, []);
 
-  // Mount + filtros: un solo useEffect
+  // ── Initial load ─────────────────────────────────────────────────
   useEffect(() => {
-    fetchPage(page, search, categoria);
-  }, [fetchPage, page, search, categoria]);
+    fetchPage(1, '', '').then(() => {
+      didMount.current = true;
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── Handlers ─────────────────────────────────────────────────────
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -82,13 +86,16 @@ export default function ProductosPage() {
     searchTimeout.current = setTimeout(() => {
       setPage(1);
       setSearch(value);
-    }, 500); // 500 ms — evita queries por cada keystroke
+      fetchPage(1, value, categoria);
+    }, 400);
   };
 
   const handleCategoriaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setPage(1);
     const val = e.target.value;
-    setCategoria(CATEGORIAS.includes(val) ? val : '');
+    const newCat = CATEGORIAS.includes(val) ? val : '';
+    setCategoria(newCat);
+    fetchPage(1, search, newCat);
   };
 
   const handleOpenNewProduct = () => {
@@ -290,14 +297,14 @@ export default function ProductosPage() {
           <div className="flex gap-1">
             <button
               disabled={page <= 1 || loading}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              onClick={() => { const np = Math.max(1, page - 1); setPage(np); fetchPage(np, search, categoria); }}
               className="p-1.5 bg-surface-container-highest rounded-md text-on-surface-variant hover:text-on-surface transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <span className="material-symbols-outlined text-lg">chevron_left</span>
             </button>
             <button
               disabled={page >= totalPages || loading}
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              onClick={() => { const np = Math.min(totalPages, page + 1); setPage(np); fetchPage(np, search, categoria); }}
               className="p-1.5 bg-surface-container-highest rounded-md text-on-surface-variant hover:text-on-surface transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <span className="material-symbols-outlined text-lg">chevron_right</span>

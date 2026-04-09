@@ -68,6 +68,8 @@ interface GetComprasParams {
   limit?: number;
   search?: string;
   estado?: string;
+  fechaInicio?: string;
+  fechaFin?: string;
 }
 
 interface GetComprasResult {
@@ -80,6 +82,8 @@ export async function getCompras({
   limit = 10,
   search = '',
   estado = '',
+  fechaInicio = '',
+  fechaFin = '',
 }: GetComprasParams = {}): Promise<ActionResult<GetComprasResult>> {
   const supabase = createServerClient();
   const from = (page - 1) * limit;
@@ -99,6 +103,14 @@ export async function getCompras({
 
     if (estado) {
       query = query.eq('estado', estado);
+    }
+
+    if (fechaInicio) {
+      query = query.gte('fecha_emision', fechaInicio);
+    }
+
+    if (fechaFin) {
+      query = query.lte('fecha_emision', fechaFin);
     }
 
     const { data, error, count } = await query;
