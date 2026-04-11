@@ -10,7 +10,7 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "Nexus Inventory - Gestión de Productos",
+  title: "SISVENT - Sistema de Inventario",
   description: "Sistema de gestión de inventarios",
 };
 

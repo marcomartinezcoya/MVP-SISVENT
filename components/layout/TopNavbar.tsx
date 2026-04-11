@@ -4,7 +4,7 @@ export function TopNavbar() {
   return (
     <header className="w-full h-16 sticky top-0 z-40 bg-surface-container-low flex items-center justify-between px-8 border-b border-outline-variant/10">
       <div className="flex items-center gap-6">
-        <h2 className="text-xl font-bold text-slate-100 tracking-tight">Nexus Inventory</h2>
+        <h2 className="text-xl font-bold text-slate-100 tracking-tight">Sistema de Inventario</h2>
         <div className="relative hidden lg:block">
           <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">search</span>
           <input 

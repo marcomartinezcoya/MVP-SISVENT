@@ -322,9 +322,9 @@ export async function createCompra(
       return { data: null, error: detalleError.message };
     }
 
-    // 3) If estado = 'recibido', update stock
+    // 3) If estado = 'recibido', update stock + register ENTRADA movements
     if (input.estado === 'recibido') {
-      await incrementarStock(supabase, input.detalles);
+      await incrementarStock(supabase, input.detalles, numeroOrden!);
     }
 
     revalidatePath('/compras');
@@ -358,7 +358,7 @@ export async function updateCompra(
   // Get current compra to check estado transition
   const { data: current, error: fetchError } = await supabase
     .from('compras')
-    .select('estado, compra_detalle(producto_id, cantidad)')
+    .select('estado, numero_orden, compra_detalle(producto_id, cantidad)')
     .eq('id', id)
     .single();
 
@@ -411,8 +411,9 @@ export async function updateCompra(
       await supabase.from('compra_detalle').insert(detalleRows);
     }
 
-    // If transitioning to 'recibido' for the first time, increment stock
+    // If transitioning to 'recibido' for the first time, increment stock + register movements
     if (newEstado === 'recibido' && currentEstado !== 'recibido') {
+      const numeroOrdenActual = (current.numero_orden as string) ?? 'COMPRA';
       // Use the new detalles if provided, otherwise use existing ones
       const detallesParaStock = input.detalles && input.detalles.length > 0
         ? input.detalles
@@ -422,7 +423,7 @@ export async function updateCompra(
             precio_unitario: 0,
           }));
 
-      await incrementarStock(supabase, detallesParaStock);
+      await incrementarStock(supabase, detallesParaStock, numeroOrdenActual);
     }
 
     revalidatePath('/compras');
@@ -433,28 +434,75 @@ export async function updateCompra(
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
-//  HELPER: Incrementar stock de productos tras recepción
+//  HELPER: Generar código MOV único
+// ──────────────────────────────────────────────────────────────────────────────
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function generarCodigoMov(supabase: any): Promise<string> {
+  const { data } = await supabase
+    .from('movimientos')
+    .select('codigo_movimiento')
+    .ilike('codigo_movimiento', 'MOV-%')
+    .order('codigo_movimiento', { ascending: false })
+    .limit(1);
+
+  const lastNum =
+    data?.[0]?.codigo_movimiento
+      ? parseInt((data[0].codigo_movimiento as string).replace('MOV-', ''), 10)
+      : 0;
+
+  return `MOV-${String(lastNum + 1).padStart(6, '0')}`;
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+//  HELPER: Incrementar stock + registrar movimiento ENTRADA por recepción
 // ──────────────────────────────────────────────────────────────────────────────
 
 async function incrementarStock(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   supabase: any,
-  detalles: { producto_id: string; cantidad: number }[],
+  detalles: { producto_id: string; cantidad: number; precio_unitario?: number }[],
+  numeroOrden: string = 'COMPRA',
 ): Promise<void> {
   for (const d of detalles) {
-    // Use Supabase RPC or increment via select + update
+    // 1) Leer stock y precio_compra actual
     const { data: prod } = await supabase
       .from('productos')
-      .select('stock_actual')
+      .select('stock_actual, precio_compra')
       .eq('id', d.producto_id)
       .single();
 
-    if (prod) {
-      const nuevoStock = Number(prod.stock_actual) + Number(d.cantidad);
-      await supabase
-        .from('productos')
-        .update({ stock_actual: nuevoStock })
-        .eq('id', d.producto_id);
-    }
+    if (!prod) continue;
+
+    // 2) Actualizar stock
+    const nuevoStock = Number(prod.stock_actual) + Number(d.cantidad);
+    await supabase
+      .from('productos')
+      .update({ stock_actual: nuevoStock })
+      .eq('id', d.producto_id);
+
+    // 3) Registrar movimiento ENTRADA con schema completo
+    const costoUnitario =
+      d.precio_unitario && d.precio_unitario > 0
+        ? d.precio_unitario
+        : Number(prod.precio_compra ?? 0);
+
+    const codigoMov = await generarCodigoMov(supabase);
+
+    await supabase.from('movimientos').insert({
+      codigo_movimiento: codigoMov,
+      producto_id:       d.producto_id,
+      tipo_movimiento:   'ENTRADA',
+      origen:            'Proveedor',
+      destino:           'Almacén Principal',
+      referencia:        numeroOrden,
+      motivo:            `Recepción de compra — ${numeroOrden}`,
+      cantidad:          Number(d.cantidad),
+      costo_unitario:    costoUnitario,
+      valor_total:       Number(d.cantidad) * costoUnitario,
+      fecha_registro:    new Date().toISOString(),
+      estado:            true,
+    });
   }
 }
+

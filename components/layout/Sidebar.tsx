@@ -19,9 +19,20 @@ export function Sidebar() {
 
   return (
     <aside className="h-screen w-64 fixed left-0 top-0 bg-surface-container-low flex flex-col py-6 px-4 gap-2 z-50 border-r border-outline-variant/10 shadow-xl shadow-black/20">
-      <div className="px-4 mb-8">
-        <h1 className="text-lg font-extrabold text-primary tracking-tight">Inventory Pro</h1>
-        <p className="text-xs text-on-surface-variant uppercase tracking-widest">Enterprise Suite</p>
+      <div className="px-4 mb-8 flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-dim flex items-center justify-center shadow-lg shadow-primary/20 shrink-0">
+          <span className="material-symbols-outlined text-on-primary font-light text-2xl" style={{ fontVariationSettings: "'wght' 300" }}>
+            all_inbox
+          </span>
+        </div>
+        <div className="flex flex-col">
+          <h1 className="text-xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-on-surface to-on-surface-variant tracking-tight uppercase">
+            SISVENT
+          </h1>
+          <p className="text-[10px] text-primary uppercase tracking-widest font-bold">
+            Sistema de Inventario
+          </p>
+        </div>
       </div>
 
       <nav className="flex-1 flex flex-col gap-1">

@@ -569,14 +569,31 @@ async function descontarStock(
         .eq('id', d.producto_id);
     }
 
-    // Register movement
+    // Register movement — schema completo
+    const { data: lastMov } = await supabase
+      .from('movimientos')
+      .select('codigo_movimiento')
+      .ilike('codigo_movimiento', 'MOV-%')
+      .order('codigo_movimiento', { ascending: false })
+      .limit(1);
+    const lastNum = lastMov?.[0]?.codigo_movimiento
+      ? parseInt(lastMov[0].codigo_movimiento.replace('MOV-', ''), 10)
+      : 0;
+    const codigoMov = `MOV-${String(lastNum + 1).padStart(6, '0')}`;
+
     await supabase.from('movimientos').insert({
-      producto_id: d.producto_id,
-      tipo: 'SALIDA',
-      cantidad: d.cantidad,
-      referencia: codigoVenta,
-      origen: 'VENTA',
-      fecha: new Date().toISOString(),
+      codigo_movimiento: codigoMov,
+      producto_id:       d.producto_id,
+      tipo_movimiento:   'SALIDA',
+      origen:            'Almacén Principal',
+      destino:           'Cliente',
+      referencia:        codigoVenta,
+      motivo:            `Venta completada — ${codigoVenta}`,
+      cantidad:          -d.cantidad,
+      costo_unitario:    0,
+      valor_total:       0,
+      fecha_registro:    new Date().toISOString(),
+      estado:            true,
     });
   }
 }
@@ -602,14 +619,31 @@ async function devolverStock(
         .eq('id', d.producto_id);
     }
 
-    // Register movement (return)
+    // Register movement (return) — schema completo
+    const { data: lastMov2 } = await supabase
+      .from('movimientos')
+      .select('codigo_movimiento')
+      .ilike('codigo_movimiento', 'MOV-%')
+      .order('codigo_movimiento', { ascending: false })
+      .limit(1);
+    const lastNum2 = lastMov2?.[0]?.codigo_movimiento
+      ? parseInt(lastMov2[0].codigo_movimiento.replace('MOV-', ''), 10)
+      : 0;
+    const codigoMov2 = `MOV-${String(lastNum2 + 1).padStart(6, '0')}`;
+
     await supabase.from('movimientos').insert({
-      producto_id: d.producto_id,
-      tipo: 'ENTRADA',
-      cantidad: d.cantidad,
-      referencia: codigoVenta,
-      origen: 'VENTA',
-      fecha: new Date().toISOString(),
+      codigo_movimiento: codigoMov2,
+      producto_id:       d.producto_id,
+      tipo_movimiento:   'ENTRADA',
+      origen:            'Devolución Cliente',
+      destino:           'Almacén Principal',
+      referencia:        codigoVenta,
+      motivo:            `Devolución por anulación — ${codigoVenta}`,
+      cantidad:          d.cantidad,
+      costo_unitario:    0,
+      valor_total:       0,
+      fecha_registro:    new Date().toISOString(),
+      estado:            true,
     });
   }
 }
