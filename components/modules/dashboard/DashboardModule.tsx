@@ -7,7 +7,7 @@ export function DashboardModule() {
   return (
     <div className="flex-1 flex flex-col">
       {/* TopAppBar specific to Dashboard */}
-      <header className="flex items-center justify-between px-8 py-6 z-30">
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between px-4 sm:px-6 lg:px-8 py-4 sm:py-6 z-30 gap-3">
         <div>
           <h2 className="text-2xl font-bold tracking-tight text-on-surface">
             Dashboard
@@ -16,23 +16,23 @@ export function DashboardModule() {
             Bienvenido de nuevo, Administrador
           </p>
         </div>
-        <div className="flex items-center gap-6">
+        <div className="flex items-center">
           {/* Filters */}
-          <div className="flex bg-surface-container rounded-xl p-1">
-            <button className="px-4 py-1.5 text-xs font-bold rounded-lg bg-primary/20 text-primary transition-all">
+          <div className="flex bg-surface-container rounded-xl p-1 overflow-x-auto">
+            <button className="px-3 sm:px-4 py-1.5 text-xs font-bold rounded-lg bg-primary/20 text-primary transition-all whitespace-nowrap">
               Este mes
             </button>
-            <button className="px-4 py-1.5 text-xs font-semibold text-on-surface-variant hover:text-on-surface transition-all">
+            <button className="px-3 sm:px-4 py-1.5 text-xs font-semibold text-on-surface-variant hover:text-on-surface transition-all whitespace-nowrap">
               Últimos 7 días
             </button>
-            <button className="px-4 py-1.5 text-xs font-semibold text-on-surface-variant hover:text-on-surface transition-all">
+            <button className="px-3 sm:px-4 py-1.5 text-xs font-semibold text-on-surface-variant hover:text-on-surface transition-all whitespace-nowrap">
               Hoy
             </button>
           </div>
         </div>
       </header>
 
-      <div className="px-8 pb-10 space-y-8">
+      <div className="px-4 sm:px-6 lg:px-8 pb-10 space-y-8">
         {/* Metrics Summary */}
         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Metric 1 */}
@@ -170,9 +170,9 @@ export function DashboardModule() {
         </section>
 
         {/* Middle Section: Analysis and Alerts */}
-        <section className="grid grid-cols-1 xl:grid-cols-3 lg:grid-cols-3 md:grid-cols-3 gap-8">
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Performance Chart (Simulated with CSS/SVG) */}
-          <div className="md:col-span-2 lg:col-span-2 xl:col-span-2 bg-surface-container p-8 rounded-2xl relative">
+          <div className="md:col-span-2 bg-surface-container p-8 rounded-2xl relative">
             <div className="flex items-center justify-between mb-8">
               <div>
                 <h3 className="text-xl font-bold text-on-surface">

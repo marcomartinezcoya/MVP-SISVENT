@@ -298,7 +298,7 @@ export default function ClientesPage() {
   const showSkeletons = isLoading;
 
   return (
-    <div className="p-8 space-y-8 animate-in fade-in duration-300">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-8 animate-in fade-in duration-300">
 
       {/* ── Header + KPI ──────────────────────────────────────────── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -362,7 +362,7 @@ export default function ClientesPage() {
       </div>
 
       {/* ── Grid ──────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {showSkeletons
           ? Array.from({ length: PAGE_SIZE }).map((_, i) => <SkeletonCard key={i} />)
           : clientes.map(c => (

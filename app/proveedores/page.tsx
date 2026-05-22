@@ -41,7 +41,7 @@ function SupplierHighlightCards({ topProveedores, loading }: { topProveedores: T
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
         {Array.from({ length: 3 }).map((_, i) => (
           <div key={i} className="bg-surface-container rounded-xl p-6 animate-pulse">
             <div className="flex items-center gap-4 mb-6">
@@ -64,7 +64,7 @@ function SupplierHighlightCards({ topProveedores, loading }: { topProveedores: T
   if (topProveedores.length === 0) return null;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
       {topProveedores.map((prov, idx) => {
         const accent = cardAccents[idx % cardAccents.length];
         return (
@@ -264,7 +264,7 @@ export default function ProveedoresPage() {
 
   // ── Render ────────────────────────────────────────────────────────────
   return (
-    <div className="p-8 space-y-0">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-0">
       {/* ── Page Header ───────────────────────────────────────────────── */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
         <div>

@@ -4,6 +4,11 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
+interface SidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
 const NAV_ITEMS = [
   { href: '/', icon: 'dashboard', label: 'Dashboard' },
   { href: '/productos', icon: 'inventory_2', label: 'Productos' },
@@ -14,11 +19,13 @@ const NAV_ITEMS = [
   { href: '/movimientos', icon: 'compare_arrows', label: 'Movimientos' },
 ];
 
-export function Sidebar() {
+export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
 
   return (
-    <aside className="h-screen w-64 fixed left-0 top-0 bg-surface-container-low flex flex-col py-6 px-4 gap-2 z-50 border-r border-outline-variant/10 shadow-xl shadow-black/20">
+    <aside className={`h-screen w-64 fixed left-0 top-0 bg-surface-container-low flex flex-col py-6 px-4 gap-2 z-50 border-r border-outline-variant/10 shadow-xl shadow-black/20 transition-transform duration-300 ease-in-out ${
+      isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+    }`}>
       <div className="px-4 mb-8 flex items-center gap-3">
         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-dim flex items-center justify-center shadow-lg shadow-primary/20 shrink-0">
           <span className="material-symbols-outlined text-on-primary font-light text-2xl" style={{ fontVariationSettings: "'wght' 300" }}>
@@ -33,6 +40,13 @@ export function Sidebar() {
             Sistema de Inventario
           </p>
         </div>
+        <button
+          className="ml-auto p-1.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-variant rounded-lg transition-colors lg:hidden"
+          onClick={onClose}
+          aria-label="Cerrar menú"
+        >
+          <span className="material-symbols-outlined text-xl">close</span>
+        </button>
       </div>
 
       <nav className="flex-1 flex flex-col gap-1">
@@ -42,6 +56,7 @@ export function Sidebar() {
             <Link
               key={href}
               href={href}
+              onClick={onClose}
               className={`flex items-center gap-3 rounded-lg px-4 py-3 transition-all duration-200 ${
                 isActive
                   ? 'bg-surface-variant text-primary border-l-4 border-primary-dim'
