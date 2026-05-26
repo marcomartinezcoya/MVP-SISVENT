@@ -34,27 +34,27 @@ export async function getVentasStats(): Promise<ActionResult<VentaStats>> {
     const today = now.toISOString().split('T')[0];
     const firstOfMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
 
-    const { data, error } = await supabase
-      .from('ventas')
-      .select('total, estado, fecha_emision');
+    const [mesResult, diaResult, totalResult] = await Promise.all([
+      supabase
+        .from('ventas')
+        .select('total')
+        .eq('estado', 'completado')
+        .gte('fecha_emision', firstOfMonth),
+      supabase
+        .from('ventas')
+        .select('total')
+        .eq('estado', 'completado')
+        .eq('fecha_emision', today),
+      supabase.from('ventas').select('*', { count: 'exact', head: true }),
+    ]);
 
-    if (error) return { data: defaults, error: error.message };
+    if (mesResult.error) return { data: defaults, error: mesResult.error.message };
 
-    const rows = (data ?? []) as { total: number; estado: string; fecha_emision: string }[];
+    const ventaMes = (mesResult.data ?? []).reduce((s, r) => s + Number(r.total), 0);
+    const ventaDia = (diaResult.data ?? []).reduce((s, r) => s + Number(r.total), 0);
+    const totalOperaciones = totalResult.count ?? 0;
 
-    const completadas = rows.filter((r) => r.estado === 'completado');
-    const ventaMes = completadas
-      .filter((r) => r.fecha_emision >= firstOfMonth)
-      .reduce((sum, r) => sum + Number(r.total), 0);
-    const ventaDia = completadas
-      .filter((r) => r.fecha_emision === today)
-      .reduce((sum, r) => sum + Number(r.total), 0);
-    const totalOperaciones = rows.length;
-
-    return {
-      data: { ventaMes, ventaDia, totalOperaciones },
-      error: null,
-    };
+    return { data: { ventaMes, ventaDia, totalOperaciones }, error: null };
   } catch (err) {
     return { data: defaults, error: err instanceof Error ? err.message : 'Error desconocido' };
   }
@@ -168,7 +168,8 @@ export async function getClientesActivos(): Promise<ActionResult<ClienteOption[]
       .from('clientes')
       .select('id, tipo_cliente, nombres, apellidos, razon_social, documento')
       .eq('estado', true)
-      .order('created_at', { ascending: false });
+      .order('nombres')
+      .limit(500);
 
     if (error) return { data: [], error: error.message };
     return { data: (data as ClienteOption[]) ?? [], error: null };
@@ -554,47 +555,56 @@ async function descontarStock(
   detalles: { producto_id: string; cantidad: number }[],
   codigoVenta: string,
 ): Promise<void> {
-  for (const d of detalles) {
-    const { data: prod } = await supabase
-      .from('productos')
-      .select('stock_actual')
-      .eq('id', d.producto_id)
-      .single();
+  if (!detalles.length) return;
 
-    if (prod) {
-      const nuevoStock = Math.max(0, Number(prod.stock_actual) - Number(d.cantidad));
-      await supabase
-        .from('productos')
-        .update({ stock_actual: nuevoStock })
-        .eq('id', d.producto_id);
-    }
+  const productIds = detalles.map((d) => d.producto_id);
 
-    // Register movement — schema completo
-    const { data: lastMov } = await supabase
+  const [prodsResult, lastMovResult] = await Promise.all([
+    supabase.from('productos').select('id, stock_actual').in('id', productIds),
+    supabase
       .from('movimientos')
       .select('codigo_movimiento')
       .ilike('codigo_movimiento', 'MOV-%')
       .order('codigo_movimiento', { ascending: false })
-      .limit(1);
-    const lastNum = lastMov?.[0]?.codigo_movimiento
-      ? parseInt(lastMov[0].codigo_movimiento.replace('MOV-', ''), 10)
-      : 0;
-    const codigoMov = `MOV-${String(lastNum + 1).padStart(6, '0')}`;
+      .limit(1),
+  ]);
 
-    await supabase.from('movimientos').insert({
-      codigo_movimiento: codigoMov,
-      producto_id:       d.producto_id,
-      tipo_movimiento:   'SALIDA',
-      origen:            'Almacén Principal',
-      destino:           'Cliente',
-      referencia:        codigoVenta,
-      motivo:            `Venta completada — ${codigoVenta}`,
-      cantidad:          -d.cantidad,
-      costo_unitario:    0,
-      valor_total:       0,
-      fecha_registro:    new Date().toISOString(),
-      estado:            true,
-    });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const prodMap = new Map<string, any>((prodsResult.data ?? []).map((p: any) => [p.id, p]));
+  const lastNum = lastMovResult.data?.[0]?.codigo_movimiento
+    ? parseInt(lastMovResult.data[0].codigo_movimiento.replace('MOV-', ''), 10)
+    : 0;
+
+  const fechaRegistro = new Date().toISOString();
+  const movimientosInserts: object[] = [];
+
+  await Promise.all(
+    detalles.map(async (d, i) => {
+      const prod = prodMap.get(d.producto_id);
+      if (!prod) return;
+
+      const nuevoStock = Math.max(0, Number(prod.stock_actual) - Number(d.cantidad));
+      await supabase.from('productos').update({ stock_actual: nuevoStock }).eq('id', d.producto_id);
+
+      movimientosInserts.push({
+        codigo_movimiento: `MOV-${String(lastNum + i + 1).padStart(6, '0')}`,
+        producto_id:       d.producto_id,
+        tipo_movimiento:   'SALIDA',
+        origen:            'Almacén Principal',
+        destino:           'Cliente',
+        referencia:        codigoVenta,
+        motivo:            `Venta completada — ${codigoVenta}`,
+        cantidad:          -d.cantidad,
+        costo_unitario:    0,
+        valor_total:       0,
+        fecha_registro:    fechaRegistro,
+        estado:            true,
+      });
+    }),
+  );
+
+  if (movimientosInserts.length > 0) {
+    await supabase.from('movimientos').insert(movimientosInserts);
   }
 }
 
@@ -604,46 +614,55 @@ async function devolverStock(
   detalles: { producto_id: string; cantidad: number }[],
   codigoVenta: string,
 ): Promise<void> {
-  for (const d of detalles) {
-    const { data: prod } = await supabase
-      .from('productos')
-      .select('stock_actual')
-      .eq('id', d.producto_id)
-      .single();
+  if (!detalles.length) return;
 
-    if (prod) {
-      const nuevoStock = Number(prod.stock_actual) + Number(d.cantidad);
-      await supabase
-        .from('productos')
-        .update({ stock_actual: nuevoStock })
-        .eq('id', d.producto_id);
-    }
+  const productIds = detalles.map((d) => d.producto_id);
 
-    // Register movement (return) — schema completo
-    const { data: lastMov2 } = await supabase
+  const [prodsResult, lastMovResult] = await Promise.all([
+    supabase.from('productos').select('id, stock_actual').in('id', productIds),
+    supabase
       .from('movimientos')
       .select('codigo_movimiento')
       .ilike('codigo_movimiento', 'MOV-%')
       .order('codigo_movimiento', { ascending: false })
-      .limit(1);
-    const lastNum2 = lastMov2?.[0]?.codigo_movimiento
-      ? parseInt(lastMov2[0].codigo_movimiento.replace('MOV-', ''), 10)
-      : 0;
-    const codigoMov2 = `MOV-${String(lastNum2 + 1).padStart(6, '0')}`;
+      .limit(1),
+  ]);
 
-    await supabase.from('movimientos').insert({
-      codigo_movimiento: codigoMov2,
-      producto_id:       d.producto_id,
-      tipo_movimiento:   'ENTRADA',
-      origen:            'Devolución Cliente',
-      destino:           'Almacén Principal',
-      referencia:        codigoVenta,
-      motivo:            `Devolución por anulación — ${codigoVenta}`,
-      cantidad:          d.cantidad,
-      costo_unitario:    0,
-      valor_total:       0,
-      fecha_registro:    new Date().toISOString(),
-      estado:            true,
-    });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const prodMap = new Map<string, any>((prodsResult.data ?? []).map((p: any) => [p.id, p]));
+  const lastNum = lastMovResult.data?.[0]?.codigo_movimiento
+    ? parseInt(lastMovResult.data[0].codigo_movimiento.replace('MOV-', ''), 10)
+    : 0;
+
+  const fechaRegistro = new Date().toISOString();
+  const movimientosInserts: object[] = [];
+
+  await Promise.all(
+    detalles.map(async (d, i) => {
+      const prod = prodMap.get(d.producto_id);
+      if (!prod) return;
+
+      const nuevoStock = Number(prod.stock_actual) + Number(d.cantidad);
+      await supabase.from('productos').update({ stock_actual: nuevoStock }).eq('id', d.producto_id);
+
+      movimientosInserts.push({
+        codigo_movimiento: `MOV-${String(lastNum + i + 1).padStart(6, '0')}`,
+        producto_id:       d.producto_id,
+        tipo_movimiento:   'ENTRADA',
+        origen:            'Devolución Cliente',
+        destino:           'Almacén Principal',
+        referencia:        codigoVenta,
+        motivo:            `Devolución por anulación — ${codigoVenta}`,
+        cantidad:          d.cantidad,
+        costo_unitario:    0,
+        valor_total:       0,
+        fecha_registro:    fechaRegistro,
+        estado:            true,
+      });
+    }),
+  );
+
+  if (movimientosInserts.length > 0) {
+    await supabase.from('movimientos').insert(movimientosInserts);
   }
 }

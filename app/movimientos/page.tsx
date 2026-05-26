@@ -327,9 +327,9 @@ export default function MovimientosPage() {
       </div>
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Bar Chart: Intensidad mensual */}
-        <div className="lg:col-span-2 glass-panel p-6 rounded-xl">
+        <div className="md:col-span-2 glass-panel p-6 rounded-xl">
           <div className="flex justify-between items-center mb-8">
             <div>
               <h4 className="font-bold text-lg text-on-surface">Intensidad de Movimientos</h4>

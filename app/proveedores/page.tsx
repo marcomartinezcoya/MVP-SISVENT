@@ -41,7 +41,7 @@ function SupplierHighlightCards({ topProveedores, loading }: { topProveedores: T
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
         {Array.from({ length: 3 }).map((_, i) => (
           <div key={i} className="bg-surface-container rounded-xl p-6 animate-pulse">
             <div className="flex items-center gap-4 mb-6">
@@ -64,7 +64,7 @@ function SupplierHighlightCards({ topProveedores, loading }: { topProveedores: T
   if (topProveedores.length === 0) return null;
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
       {topProveedores.map((prov, idx) => {
         const accent = cardAccents[idx % cardAccents.length];
         return (

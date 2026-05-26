@@ -8,7 +8,7 @@ interface TopNavbarProps {
 
 export function TopNavbar({ onMenuClick }: TopNavbarProps) {
   return (
-    <header style={{ zIndex: 9999 }} className="w-full h-16 sticky top-0 bg-surface-container-low flex items-center justify-between px-4 md:px-8 border-b border-outline-variant/10">
+    <header style={{ zIndex: 500 }} className="w-full h-16 sticky top-0 bg-surface-container-low flex items-center justify-between px-4 md:px-8 border-b border-outline-variant/10">
       <div className="flex items-center gap-3 md:gap-6">
         {/* Hamburger — visible en todos los tamaños, abre/cierra el sidebar */}
         <button

@@ -29,8 +29,8 @@ function formatFecha(isoDate: string): string {
 function StatsCards({ stats, loading }: { stats: ComprasDashboardStats; loading: boolean }) {
   if (loading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mb-10">
-        <div className="sm:col-span-2 bg-surface-container-low p-6 rounded-lg animate-pulse">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+        <div className="md:col-span-2 bg-surface-container-low p-6 rounded-lg animate-pulse">
           <div className="h-4 w-48 bg-surface-variant rounded mb-4" />
           <div className="h-10 w-40 bg-surface-variant rounded" />
         </div>
@@ -48,7 +48,7 @@ function StatsCards({ stats, loading }: { stats: ComprasDashboardStats; loading:
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
       {/* Featured Card: Total Pending */}
-      <div className="sm:col-span-2 bg-surface-container-low p-6 rounded-lg relative overflow-hidden group">
+      <div className="md:col-span-2 bg-surface-container-low p-6 rounded-lg relative overflow-hidden group">
         <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
           <span className="material-symbols-outlined text-8xl" style={{ fontVariationSettings: '"FILL" 1' }}>payments</span>
         </div>

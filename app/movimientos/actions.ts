@@ -69,24 +69,32 @@ export async function getMovimientosStats(): Promise<ActionResult<MovimientosSta
   try {
     const today = new Date().toISOString().split('T')[0];
 
-    const { data, error } = await supabase
-      .from('movimientos')
-      .select('tipo_movimiento, fecha_registro')
-      .eq('estado', true);
+    const [totalResult, entradasResult, salidasResult] = await Promise.all([
+      supabase.from('movimientos').select('*', { count: 'exact', head: true }).eq('estado', true),
+      supabase
+        .from('movimientos')
+        .select('*', { count: 'exact', head: true })
+        .eq('estado', true)
+        .eq('tipo_movimiento', 'ENTRADA')
+        .gte('fecha_registro', today + 'T00:00:00')
+        .lte('fecha_registro', today + 'T23:59:59'),
+      supabase
+        .from('movimientos')
+        .select('*', { count: 'exact', head: true })
+        .eq('estado', true)
+        .eq('tipo_movimiento', 'SALIDA')
+        .gte('fecha_registro', today + 'T00:00:00')
+        .lte('fecha_registro', today + 'T23:59:59'),
+    ]);
 
-    if (error) return { data: defaults, error: error.message };
-
-    const rows = (data ?? []) as { tipo_movimiento: string; fecha_registro: string }[];
-
-    const totalMovimientos = rows.length;
-    const entradasHoy = rows.filter(
-      (r) => r.tipo_movimiento === 'ENTRADA' && r.fecha_registro?.startsWith(today),
-    ).length;
-    const salidasHoy = rows.filter(
-      (r) => r.tipo_movimiento === 'SALIDA' && r.fecha_registro?.startsWith(today),
-    ).length;
-
-    return { data: { totalMovimientos, entradasHoy, salidasHoy }, error: null };
+    return {
+      data: {
+        totalMovimientos: totalResult.count ?? 0,
+        entradasHoy: entradasResult.count ?? 0,
+        salidasHoy: salidasResult.count ?? 0,
+      },
+      error: null,
+    };
   } catch (err) {
     return { data: defaults, error: err instanceof Error ? err.message : 'Error desconocido' };
   }
@@ -100,15 +108,19 @@ export async function getMovimientosHistorico(): Promise<ActionResult<Movimiento
   const supabase = createServerClient();
 
   try {
+    const now = new Date();
+    // Only fetch the last 12 months instead of all records
+    const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1).toISOString();
+
     const { data, error } = await supabase
       .from('movimientos')
       .select('tipo_movimiento, fecha_registro')
       .eq('estado', true)
+      .gte('fecha_registro', twelveMonthsAgo)
       .order('fecha_registro', { ascending: false });
 
     if (error) return { data: [], error: error.message };
 
-    const now = new Date();
     const months: MovimientoHistoricoItem[] = [];
 
     for (let i = 11; i >= 0; i--) {
@@ -142,28 +154,28 @@ export async function getDistribucionMovimientos(): Promise<ActionResult<Distrib
   const supabase = createServerClient();
 
   try {
-    const { data, error } = await supabase
-      .from('movimientos')
-      .select('tipo_movimiento')
-      .eq('estado', true);
+    const tipos: TipoMovimiento[] = ['ENTRADA', 'SALIDA', 'TRANSFERENCIA', 'AJUSTE'];
 
-    if (error) return { data: [], error: error.message };
+    // 4 COUNT queries in parallel — no rows transferred, just headers
+    const results = await Promise.all(
+      tipos.map((tipo) =>
+        supabase
+          .from('movimientos')
+          .select('*', { count: 'exact', head: true })
+          .eq('estado', true)
+          .eq('tipo_movimiento', tipo),
+      ),
+    );
 
-    const rows = (data ?? []) as { tipo_movimiento: string }[];
-    const total = rows.length;
-
+    const total = results.reduce((sum, r) => sum + (r.count ?? 0), 0);
     if (total === 0) return { data: [], error: null };
 
-    const tipos: TipoMovimiento[] = ['ENTRADA', 'SALIDA', 'TRANSFERENCIA', 'AJUSTE'];
-    const distribucion: DistribucionTipo[] = tipos
-      .map((tipo) => {
-        const count = rows.filter((r) => r.tipo_movimiento === tipo).length;
-        return {
-          tipo,
-          count,
-          porcentaje: Math.round((count / total) * 100),
-        };
-      })
+    const distribucion: DistribucionTipo[] = results
+      .map((r, i) => ({
+        tipo: tipos[i],
+        count: r.count ?? 0,
+        porcentaje: Math.round(((r.count ?? 0) / total) * 100),
+      }))
       .filter((d) => d.count > 0);
 
     return { data: distribucion, error: null };

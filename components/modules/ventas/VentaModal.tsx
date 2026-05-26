@@ -267,7 +267,7 @@ export function VentaModal({ isOpen, onClose, onSaved, mode = 'create', venta }:
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-surface-container-lowest/80 backdrop-blur-md p-4 lg:p-8">
+    <div style={{ zIndex: 10000 }} className="fixed inset-0 flex items-center justify-center bg-surface-container-lowest/80 backdrop-blur-md p-4 lg:p-8">
       {/* MODAL CONTAINER */}
       <div className="w-full max-w-5xl bg-surface-container-low rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[95vh] border border-outline-variant/20">
 

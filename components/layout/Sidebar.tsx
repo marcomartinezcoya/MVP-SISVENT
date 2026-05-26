@@ -57,7 +57,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             <Link
               key={href}
               href={href}
-              onClick={onClose}
+              onClick={() => { if (window.innerWidth < 1024) onClose(); }}
               className={`flex items-center gap-3 rounded-lg px-4 py-3 transition-all duration-200 ${
                 isActive
                   ? 'bg-surface-variant text-primary border-l-4 border-primary-dim'

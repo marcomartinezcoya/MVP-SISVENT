@@ -30,30 +30,25 @@ export async function getComprasDashboardStats(): Promise<ActionResult<ComprasDa
   const defaults: ComprasDashboardStats = { valorPendientes: 0, countPendientes: 0, esperadosHoy: 0 };
 
   try {
-    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    const today = new Date().toISOString().split('T')[0];
 
-    // Query all compras at once and aggregate client-side (avoids extra round trips)
-    const { data, error } = await supabase
-      .from('compras')
-      .select('total, estado, fecha_emision');
+    const [pendientesResult, hoyResult] = await Promise.all([
+      supabase.from('compras').select('total').eq('estado', 'pendiente'),
+      supabase
+        .from('compras')
+        .select('*', { count: 'exact', head: true })
+        .eq('estado', 'pendiente')
+        .eq('fecha_emision', today),
+    ]);
 
-    if (error) return { data: defaults, error: error.message };
+    if (pendientesResult.error) return { data: defaults, error: pendientesResult.error.message };
 
-    const rows = (data ?? []) as { total: number; estado: string; fecha_emision: string }[];
-
-    const pendientes = rows.filter((r) => r.estado === 'pendiente');
+    const pendientes = (pendientesResult.data ?? []) as { total: number }[];
     const valorPendientes = pendientes.reduce((sum, r) => sum + Number(r.total), 0);
     const countPendientes = pendientes.length;
-    const esperadosHoy = rows.filter(
-      (r) =>
-        r.fecha_emision === today &&
-        r.estado === 'pendiente',
-    ).length;
+    const esperadosHoy = hoyResult.count ?? 0;
 
-    return {
-      data: { valorPendientes, countPendientes, esperadosHoy },
-      error: null,
-    };
+    return { data: { valorPendientes, countPendientes, esperadosHoy }, error: null };
   } catch (err) {
     return { data: defaults, error: err instanceof Error ? err.message : 'Error desconocido' };
   }
@@ -434,28 +429,7 @@ export async function updateCompra(
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
-//  HELPER: Generar código MOV único
-// ──────────────────────────────────────────────────────────────────────────────
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function generarCodigoMov(supabase: any): Promise<string> {
-  const { data } = await supabase
-    .from('movimientos')
-    .select('codigo_movimiento')
-    .ilike('codigo_movimiento', 'MOV-%')
-    .order('codigo_movimiento', { ascending: false })
-    .limit(1);
-
-  const lastNum =
-    data?.[0]?.codigo_movimiento
-      ? parseInt((data[0].codigo_movimiento as string).replace('MOV-', ''), 10)
-      : 0;
-
-  return `MOV-${String(lastNum + 1).padStart(6, '0')}`;
-}
-
-// ──────────────────────────────────────────────────────────────────────────────
-//  HELPER: Incrementar stock + registrar movimiento ENTRADA por recepción
+//  HELPER: Incrementar stock + registrar movimientos ENTRADA (batch)
 // ──────────────────────────────────────────────────────────────────────────────
 
 async function incrementarStock(
@@ -464,45 +438,70 @@ async function incrementarStock(
   detalles: { producto_id: string; cantidad: number; precio_unitario?: number }[],
   numeroOrden: string = 'COMPRA',
 ): Promise<void> {
-  for (const d of detalles) {
-    // 1) Leer stock y precio_compra actual
-    const { data: prod } = await supabase
-      .from('productos')
-      .select('stock_actual, precio_compra')
-      .eq('id', d.producto_id)
-      .single();
+  if (!detalles.length) return;
 
-    if (!prod) continue;
+  const productIds = detalles.map((d) => d.producto_id);
 
-    // 2) Actualizar stock
-    const nuevoStock = Number(prod.stock_actual) + Number(d.cantidad);
-    await supabase
-      .from('productos')
-      .update({ stock_actual: nuevoStock })
-      .eq('id', d.producto_id);
+  // 1) Fetch all products in one query
+  const { data: prods } = await supabase
+    .from('productos')
+    .select('id, stock_actual, precio_compra')
+    .in('id', productIds);
 
-    // 3) Registrar movimiento ENTRADA con schema completo
-    const costoUnitario =
-      d.precio_unitario && d.precio_unitario > 0
-        ? d.precio_unitario
-        : Number(prod.precio_compra ?? 0);
+  if (!prods?.length) return;
 
-    const codigoMov = await generarCodigoMov(supabase);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const prodMap = new Map<string, any>(prods.map((p: any) => [p.id, p]));
 
-    await supabase.from('movimientos').insert({
-      codigo_movimiento: codigoMov,
-      producto_id:       d.producto_id,
-      tipo_movimiento:   'ENTRADA',
-      origen:            'Proveedor',
-      destino:           'Almacén Principal',
-      referencia:        numeroOrden,
-      motivo:            `Recepción de compra — ${numeroOrden}`,
-      cantidad:          Number(d.cantidad),
-      costo_unitario:    costoUnitario,
-      valor_total:       Number(d.cantidad) * costoUnitario,
-      fecha_registro:    new Date().toISOString(),
-      estado:            true,
-    });
+  // 2) Get last MOV number once
+  const { data: lastMovData } = await supabase
+    .from('movimientos')
+    .select('codigo_movimiento')
+    .ilike('codigo_movimiento', 'MOV-%')
+    .order('codigo_movimiento', { ascending: false })
+    .limit(1);
+
+  const lastNum = lastMovData?.[0]?.codigo_movimiento
+    ? parseInt((lastMovData[0].codigo_movimiento as string).replace('MOV-', ''), 10)
+    : 0;
+
+  const fechaRegistro = new Date().toISOString();
+  const movimientosInserts: object[] = [];
+
+  // 3) Update stock in parallel, prepare batch movement insert
+  await Promise.all(
+    detalles.map(async (d, i) => {
+      const prod = prodMap.get(d.producto_id);
+      if (!prod) return;
+
+      const nuevoStock = Number(prod.stock_actual) + Number(d.cantidad);
+      await supabase.from('productos').update({ stock_actual: nuevoStock }).eq('id', d.producto_id);
+
+      const costoUnitario =
+        d.precio_unitario && d.precio_unitario > 0
+          ? d.precio_unitario
+          : Number(prod.precio_compra ?? 0);
+
+      movimientosInserts.push({
+        codigo_movimiento: `MOV-${String(lastNum + i + 1).padStart(6, '0')}`,
+        producto_id:       d.producto_id,
+        tipo_movimiento:   'ENTRADA',
+        origen:            'Proveedor',
+        destino:           'Almacén Principal',
+        referencia:        numeroOrden,
+        motivo:            `Recepción de compra — ${numeroOrden}`,
+        cantidad:          Number(d.cantidad),
+        costo_unitario:    costoUnitario,
+        valor_total:       Number(d.cantidad) * costoUnitario,
+        fecha_registro:    fechaRegistro,
+        estado:            true,
+      });
+    }),
+  );
+
+  // 4) Batch insert all movements in one query
+  if (movimientosInserts.length > 0) {
+    await supabase.from('movimientos').insert(movimientosInserts);
   }
 }
 

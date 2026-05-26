@@ -326,10 +326,10 @@ export default function VentasPage() {
       </div>
 
       {/* Bento Grid Stats Section */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mb-10">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
         
         {/* Featured Card: Venta del Mes */}
-        <div className="sm:col-span-2 bg-surface-container-low p-6 rounded-lg relative overflow-hidden group">
+        <div className="md:col-span-2 bg-surface-container-low p-6 rounded-lg relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
             <span className="material-symbols-outlined text-8xl" style={{ fontVariationSettings: '"FILL" 1' }}>payments</span>
           </div>
