@@ -87,6 +87,7 @@ export function ProveedorFormModal({
     else if (!/^\d{11}$/.test(form.ruc.trim())) newErrors.ruc = 'El RUC debe tener 11 dígitos';
     if (!form.contacto?.trim()) newErrors.contacto = 'La persona de contacto es requerida';
     if (!form.telefono?.trim()) newErrors.telefono = 'El teléfono es requerido';
+    else if (!/^\d{9}$/.test(form.telefono.trim())) newErrors.telefono = 'El celular debe tener exactamente 9 dígitos';
     if (!form.email.trim()) newErrors.email = 'El email es requerido';
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) newErrors.email = 'Email inválido';
     if (!form.categoria_id) newErrors.categoria_id = 'La categoría es requerida';
@@ -263,9 +264,11 @@ export function ProveedorFormModal({
                   id="proveedor-telefono"
                   name="telefono"
                   type="tel"
+                  inputMode="numeric"
+                  maxLength={9}
                   value={form.telefono ?? ''}
                   onChange={handleChange}
-                  placeholder="+51 999 000 000"
+                  placeholder="987654321"
                   className={`w-full bg-surface-container border rounded-lg px-4 py-2.5 text-sm text-on-surface placeholder:text-on-surface-variant/40 focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none transition-all ${
                     errors.telefono ? 'border-error/60 focus:ring-error/40' : 'border-outline-variant/20'
                   }`}

@@ -167,8 +167,22 @@ export const ClienteFormModal: React.FC<ClienteFormModalProps> = ({
     if (formData.tipo_cliente === 'persona' && !formData.nombres.trim()) {
       newErrors.nombres = 'Obligatorio para personas';
     }
-    if (!formData.documento.trim()) newErrors.documento = 'Obligatorio';
-    if (!formData.telefono.trim()) newErrors.telefono = 'Obligatorio';
+    // Documento
+    if (!formData.documento.trim()) {
+      newErrors.documento = 'Obligatorio';
+    } else if (formData.tipo_cliente === 'persona') {
+      if (!/^\d{8}$/.test(formData.documento.trim()))
+        newErrors.documento = 'El DNI debe tener exactamente 8 dígitos';
+    } else if (formData.tipo_cliente === 'empresa') {
+      if (!/^\d{11}$/.test(formData.documento.trim()))
+        newErrors.documento = 'El RUC debe tener exactamente 11 dígitos';
+    }
+    // Teléfono
+    if (!formData.telefono.trim()) {
+      newErrors.telefono = 'Obligatorio';
+    } else if (!/^\d{9}$/.test(formData.telefono.trim())) {
+      newErrors.telefono = 'El celular debe tener exactamente 9 dígitos';
+    }
     if (formData.email && !/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Email inválido';
     }
@@ -403,14 +417,16 @@ export const ClienteFormModal: React.FC<ClienteFormModalProps> = ({
           {/* ── Documento ─────────────────────────────────────────── */}
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-on-surface-variant">
-              {isEmpresa ? 'RUC' : 'DNI / Documento'} <span className="text-error">*</span>
+              {isEmpresa ? 'RUC' : 'DNI'} <span className="text-error">*</span>
             </label>
             <input
               name="documento"
               value={formData.documento}
               onChange={handleChange}
+              inputMode="numeric"
+              maxLength={isEmpresa ? 11 : 8}
               className={getInputClass('documento')}
-              placeholder={isEmpresa ? 'Ej: 20100012345' : 'Ej: 12345678'}
+              placeholder={isEmpresa ? '20100012345' : '12345678'}
               disabled={isSubmitting || isEditMode}
             />
             {isEditMode && (
@@ -426,14 +442,17 @@ export const ClienteFormModal: React.FC<ClienteFormModalProps> = ({
           {/* ── Teléfono ──────────────────────────────────────────── */}
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-on-surface-variant">
-              Teléfono <span className="text-error">*</span>
+              Celular <span className="text-error">*</span>
             </label>
             <input
               name="telefono"
               value={formData.telefono}
               onChange={handleChange}
+              type="tel"
+              inputMode="numeric"
+              maxLength={9}
               className={getInputClass('telefono')}
-              placeholder="Ej: 51 999 000 111"
+              placeholder="987654321"
               disabled={isSubmitting}
             />
             {errors.telefono && (
