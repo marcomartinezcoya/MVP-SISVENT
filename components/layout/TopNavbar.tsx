@@ -8,18 +8,25 @@ interface TopNavbarProps {
 
 export function TopNavbar({ onMenuClick }: TopNavbarProps) {
   return (
-    <header className="w-full h-16 sticky top-0 z-40 bg-surface-container-low flex items-center justify-between px-4 md:px-8 border-b border-outline-variant/10">
+    <header style={{ zIndex: 9999 }} className="w-full h-16 sticky top-0 bg-surface-container-low flex items-center justify-between px-4 md:px-8 border-b border-outline-variant/10">
       <div className="flex items-center gap-3 md:gap-6">
+        {/* Hamburger — visible en todos los tamaños, abre/cierra el sidebar */}
         <button
-          className="p-2 text-on-surface-variant hover:bg-surface-variant rounded-lg transition-colors lg:hidden"
+          className="p-2 text-on-surface-variant hover:bg-surface-variant rounded-lg transition-colors"
           onClick={onMenuClick}
-          aria-label="Abrir menú"
+          aria-label="Abrir o cerrar menú"
         >
           <span className="material-symbols-outlined">menu</span>
         </button>
-        <h2 className="text-xl font-bold text-slate-100 tracking-tight hidden sm:block">Sistema de Inventario</h2>
+
+        <h2 className="text-xl font-bold text-slate-100 tracking-tight hidden sm:block">
+          Sistema de Inventario
+        </h2>
+
         <div className="relative hidden lg:block">
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">search</span>
+          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">
+            search
+          </span>
           <input
             className="bg-surface-container-highest border-none rounded-md pl-10 pr-4 py-1.5 text-sm w-80 focus:ring-2 focus:ring-primary/50 text-on-surface placeholder:text-on-surface-variant outline-none transition-all"
             placeholder="Buscar productos, órdenes..."
@@ -27,6 +34,7 @@ export function TopNavbar({ onMenuClick }: TopNavbarProps) {
           />
         </div>
       </div>
+
       <div className="flex items-center gap-2 md:gap-4">
         <button className="p-2 text-on-surface-variant hover:bg-surface-variant rounded-full transition-colors">
           <span className="material-symbols-outlined">notifications</span>

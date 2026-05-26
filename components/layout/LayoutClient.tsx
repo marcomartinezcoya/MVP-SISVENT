@@ -1,27 +1,46 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sidebar } from './Sidebar';
 import { TopNavbar } from './TopNavbar';
 
 export function LayoutClient({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  // Abre el sidebar por defecto en pantallas de escritorio
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1024px)');
+    if (mq.matches) setSidebarOpen(true);
+
+    const handler = (e: MediaQueryListEvent) => {
+      if (e.matches) setSidebarOpen(true);
+    };
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+
+  const handleToggle = () => setSidebarOpen(prev => !prev);
+  const handleClose = () => setSidebarOpen(false);
+
   return (
     <>
-      {/* Mobile overlay */}
-      <div
-        className={`fixed inset-0 bg-black/60 z-40 lg:hidden transition-opacity duration-300 ${
-          sidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+      {/* Overlay oscuro — solo visible en mobile cuando el sidebar está abierto */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 z-40 lg:hidden"
+          onClick={handleClose}
+          aria-hidden="true"
+        />
+      )}
+
+      <Sidebar isOpen={sidebarOpen} onClose={handleClose} />
+
+      <main
+        className={`min-h-screen flex flex-col transition-all duration-300 ease-in-out ${
+          sidebarOpen ? 'lg:ml-64' : 'lg:ml-0'
         }`}
-        onClick={() => setSidebarOpen(false)}
-        aria-hidden="true"
-      />
-
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-
-      <main className="lg:ml-64 min-h-screen flex flex-col">
-        <TopNavbar onMenuClick={() => setSidebarOpen(true)} />
+      >
+        <TopNavbar onMenuClick={handleToggle} />
         {children}
       </main>
 

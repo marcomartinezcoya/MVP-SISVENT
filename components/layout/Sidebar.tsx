@@ -23,16 +23,24 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
 
   return (
-    <aside className={`h-screen w-64 fixed left-0 top-0 bg-surface-container-low flex flex-col py-6 px-4 gap-2 z-50 border-r border-outline-variant/10 shadow-xl shadow-black/20 transition-transform duration-300 ease-in-out ${
-      isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-    }`}>
+    <aside
+      className="w-64 fixed left-0 top-0 h-screen bg-surface-container-low flex flex-col py-6 px-4 gap-2 z-50 border-r border-outline-variant/10 shadow-xl shadow-black/20"
+      style={{
+        transform: isOpen ? 'translateX(0)' : 'translateX(-100%)',
+        transition: 'transform 300ms ease-in-out',
+      }}
+    >
+      {/* Logo + botón cerrar */}
       <div className="px-4 mb-8 flex items-center gap-3">
         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-dim flex items-center justify-center shadow-lg shadow-primary/20 shrink-0">
-          <span className="material-symbols-outlined text-on-primary font-light text-2xl" style={{ fontVariationSettings: "'wght' 300" }}>
+          <span
+            className="material-symbols-outlined text-on-primary font-light text-2xl"
+            style={{ fontVariationSettings: "'wght' 300" }}
+          >
             all_inbox
           </span>
         </div>
-        <div className="flex flex-col">
+        <div className="flex flex-col min-w-0">
           <h1 className="text-xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-on-surface to-on-surface-variant tracking-tight uppercase">
             SISVENT
           </h1>
@@ -40,13 +48,6 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             Sistema de Inventario
           </p>
         </div>
-        <button
-          className="ml-auto p-1.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-variant rounded-lg transition-colors lg:hidden"
-          onClick={onClose}
-          aria-label="Cerrar menú"
-        >
-          <span className="material-symbols-outlined text-xl">close</span>
-        </button>
       </div>
 
       <nav className="flex-1 flex flex-col gap-1">
